@@ -1,6 +1,4 @@
-using UnityEngine;
-
-public class Voxel
+public struct Voxel
 {
-    
+
 }
