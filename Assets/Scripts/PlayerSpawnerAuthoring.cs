@@ -4,14 +4,14 @@ using UnityEngine;
 namespace Minecraft
 {
     [DisallowMultipleComponent]
-    public class CubeSpawnerAuthoring : MonoBehaviour
+    public class PlayerSpawnerAuthoring : MonoBehaviour
     {
         [SerializeField]
         private GameObject player;
 
-        private class Baker : Baker<CubeSpawnerAuthoring>
+        private class Baker : Baker<PlayerSpawnerAuthoring>
         {
-            public override void Bake(CubeSpawnerAuthoring authoring)
+            public override void Bake(PlayerSpawnerAuthoring authoring)
             {
                 var spawner = new PlayerSpawner
                 {
