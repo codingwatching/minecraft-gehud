@@ -40,7 +40,7 @@ namespace Minecraft
                 || arrayCoordinate.z >= Size;
         }
 
-        public void GetEntity(in int3 coordinate, out Entity entity)
+        public Entity GetEntity(in int3 coordinate)
         {
             var arrayCoordinate = new int3
             {
@@ -51,17 +51,16 @@ namespace Minecraft
 
             if (IsOutOfBuffer(arrayCoordinate))
             {
-                entity = Entity.Null;
-                return;
+                return Entity.Null;
             }
 
             var index = CoordinateToIndex(arrayCoordinate, Size, Height);
-            entity = Chunks[index];
+            return Chunks[index];
         }
 
-        public bool TryGetEntity(in int3 chunkCoordinate, out Entity entity)
+        public bool TryGetEntity(in int3 coordinate, out Entity entity)
         {
-            GetEntity(chunkCoordinate, out entity);
+            entity = GetEntity(coordinate);
             return entity != Entity.Null;
         }
 
@@ -99,7 +98,7 @@ namespace Minecraft
 
                         var newX = x - sideDelta / 2;
                         var newZ = z - sideDelta / 2;
-                        if (x < 0 || z < 0 || x >= Size || z >= Size)
+                        if (newX < 0 || newZ < 0 || newX >= Size || newZ >= Size)
                         {
                             continue;
                         }
@@ -139,7 +138,7 @@ namespace Minecraft
 
                         var newX = x - centerDelta.x;
                         var newZ = z - centerDelta.y;
-                        if (x < 0 || z < 0 || x >= Size || z >= Size)
+                        if (newX < 0 || newZ < 0 || newX >= Size || newZ >= Size)
                         {
                             commandBuffer.AddComponent<ChunkToDestroy>(chunk);
                             continue;
@@ -165,7 +164,7 @@ namespace Minecraft
                 z = (int)math.floor(coordinate.z / (float)Chunk.Size)
             };
 
-            GetEntity(chunkCoordinate, out var entity);
+            var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null
                 || !entityManager.HasComponent<Chunk>(entity)
                 //|| entityManager.IsComponentEnabled<ThreadedChunk>(entity)
@@ -182,7 +181,7 @@ namespace Minecraft
 
         public void MarkDirtyIfExistsImmediate(in EntityManager entityManager, in int3 chunkCoordinate)
         {
-            GetEntity(chunkCoordinate, out var entity);
+            var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
             {
                 return;
@@ -194,7 +193,7 @@ namespace Minecraft
 
         public void MarkDirtyIfExistsImmediate(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate)
         {
-            GetEntity(chunkCoordinate, out var entity);
+            var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
             {
                 return;
@@ -206,7 +205,7 @@ namespace Minecraft
 
         public void MarkDirtyIfExists(in EntityManager entityManager, in int3 chunkCoordinate)
         {
-            GetEntity(chunkCoordinate, out var entity);
+            var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
             {
                 return;
@@ -217,7 +216,7 @@ namespace Minecraft
 
         public void MarkDirtyIfExists(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate)
         {
-            GetEntity(chunkCoordinate, out var entity);
+            var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity) || entityManager.IsComponentEnabled<DirtyChunk>(entity))
             {
                 return;

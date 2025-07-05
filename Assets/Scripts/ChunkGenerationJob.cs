@@ -11,7 +11,7 @@ namespace Minecraft
 
         void IJobParallelFor.Execute(int index)
         {
-            var coordinate = IndexUtility.IndexToCoordinate(index, Chunk.Size, Chunk.Size, Chunk.Area);
+            var coordinate = IndexUtility.IndexToCoordinate(index, Chunk.Size, Chunk.Size);
 
             var globalY = coordinate.y + Chunk.Coordinate.y * Chunk.Size;
 

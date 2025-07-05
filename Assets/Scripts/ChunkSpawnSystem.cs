@@ -14,30 +14,28 @@ namespace Minecraft
         [BurstCompile]
         readonly void ISystem.OnUpdate(ref SystemState state)
         {
-            var commandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var commandBuffer = commandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
+            var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
-            foreach (var (request, requestEntity) in SystemAPI.Query<ChunkSpawnRequest>().WithEntityAccess())
+            foreach (var (request, chunkEntity) in SystemAPI.Query<RefRO<ChunkSpawnRequest>>().WithEntityAccess())
             {
-                var chunkEntity = commandBuffer.CreateEntity();
-
-                if (!request.IsVisible)
+                if (!request.ValueRO.IsVisible)
                 {
                     commandBuffer.AddComponent<DisableRendering>(chunkEntity);
                 }
 
-                var position = request.Coordinate * Chunk.Size;
+                var position = request.ValueRO.Coordinate * Chunk.Size;
 
                 commandBuffer.AddComponent(chunkEntity, new LocalToWorld
                 {
                     Value = float4x4.Translate(position)
                 });
 
-                commandBuffer.SetName(chunkEntity, $"Chunk({request.Coordinate.x}, {request.Coordinate.y}, {request.Coordinate.z})");
+                commandBuffer.SetName(chunkEntity, $"Chunk({request.ValueRO.Coordinate.x}, {request.ValueRO.Coordinate.y}, {request.ValueRO.Coordinate.z})");
 
                 commandBuffer.AddComponent(chunkEntity, new Chunk
                 {
-                    Coordinate = request.Coordinate,
+                    Coordinate = request.ValueRO.Coordinate,
                     Voxels = new(Chunk.Volume, Allocator.Persistent)
                 });
 
@@ -49,7 +47,7 @@ namespace Minecraft
                 commandBuffer.AddComponent<ImmediateChunk>(chunkEntity);
                 commandBuffer.SetComponentEnabled<ImmediateChunk>(chunkEntity, false);
 
-                commandBuffer.DestroyEntity(requestEntity);
+                commandBuffer.RemoveComponent<ChunkSpawnRequest>(chunkEntity);
             }
         }
     }

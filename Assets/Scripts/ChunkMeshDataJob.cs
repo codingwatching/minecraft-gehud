@@ -1,5 +1,7 @@
 ﻿using Minecraft.Utilities;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 
@@ -8,7 +10,11 @@ namespace Minecraft
     public struct ChunkMeshDataJob : IJob
     {
         [ReadOnly]
-        public Chunk Chunk;
+        public int3 Coordinate;
+        [ReadOnly, NativeDisableContainerSafetyRestriction]
+        public NativeArray<NativeArray<Voxel>> Claster;
+        [ReadOnly]
+        public NativeArray<Entity> ClasterEntities;
         [WriteOnly]
         public ChunkMeshData Data;
 
@@ -30,7 +36,7 @@ namespace Minecraft
 
         private void ProcessVoxel(int3 localVoxelCoordinate)
         {
-            var voxel = Chunk[localVoxelCoordinate];
+            var voxel = GetVoxel(localVoxelCoordinate);
             var x = localVoxelCoordinate.x;
             var y = localVoxelCoordinate.y;
             var z = localVoxelCoordinate.z;
@@ -119,39 +125,30 @@ namespace Minecraft
             vertexCount += 4;
         }
 
-        private void GetVoxel(in int3 localVoxelCoordinate, out Voxel voxel)
+        private Voxel GetVoxel(in int3 localVoxelCoordinate)
         {
-            var voxelCoordinate = Chunk.Coordinate * Chunk.Size + localVoxelCoordinate;
+            var voxelCoordinate = Coordinate * Chunk.Size + localVoxelCoordinate;
             var sideChunkCoordinate = CoordinateUtility.ToChunk(voxelCoordinate);
 
-            if (sideChunkCoordinate.x != Chunk.Coordinate.x || sideChunkCoordinate.y != Chunk.Coordinate.y || sideChunkCoordinate.z != Chunk.Coordinate.z)
+            var sideLocalVoxelCoordinate = voxelCoordinate - sideChunkCoordinate * Chunk.Size;
+
+            sideChunkCoordinate -= Coordinate;
+            sideChunkCoordinate += new int3(1, 1, 1);
+            var clasterIndex = IndexUtility.CoordinateToIndex(sideChunkCoordinate, 3, 3);
+            var voxels = Claster[clasterIndex];
+
+            if (!voxels.IsCreated)
             {
-                voxel = Voxel.Air;
-                return;
+                return default;
             }
 
-            voxel = Chunk[localVoxelCoordinate];
-
-            //var sideLocalVoxelCoordinate = voxelCoordinate - sideChunkCoordinate * Chunk.Size;
-
-            //sideChunkCoordinate -= Chunk.Coordinate;
-            //sideChunkCoordinate += new int3(1, 1, 1);
-            //var clasterIndex = IndexUtility.CoordinateToIndex(sideChunkCoordinate, 3, 3);
-            //var voxels = Claster[clasterIndex];
-            //if (!voxels.IsCreated)
-            //{
-            //    voxel = default;
-            //    return;
-            //}
-
-            //var sideLocalVoxelIndex = IndexUtility.CoordinateToIndex(sideLocalVoxelCoordinate, Chunk.Size, Chunk.Size, Chunk.Area);
-            //voxel = voxels[sideLocalVoxelIndex];
+            var sideLocalVoxelIndex = IndexUtility.CoordinateToIndex(sideLocalVoxelCoordinate, Chunk.Size, Chunk.Size);
+            return voxels[sideLocalVoxelIndex];
         }
 
         private bool HasFace(in int3 localVoxelCoordinate)
         {
-            GetVoxel(localVoxelCoordinate, out var voxel);
-            return voxel.Block == Voxel.Air.Block;
+            return GetVoxel(localVoxelCoordinate).Block == Voxel.Air.Block;
         }
     }
 }

@@ -62,8 +62,6 @@ namespace Minecraft
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var debugMesh = SystemAPI.ManagedAPI.GetSingleton<DebugMesh>().Mesh;
-
             foreach (var (data, chunkEntity) in SystemAPI.Query<RefRO<ChunkMeshData>>().WithNone<ThreadedChunk>().WithEntityAccess())
             {
                 var job = new ChunkMeshJob

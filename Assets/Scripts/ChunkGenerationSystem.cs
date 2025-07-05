@@ -1,11 +1,11 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
-using static Unity.Entities.SystemAPI;
 
 namespace Minecraft
 {
     [BurstCompile]
+    [UpdateAfter(typeof(ChunkSpawnSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationSystem : ISystem
     {
@@ -18,17 +18,18 @@ namespace Minecraft
         [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
         {
-            var commandBufferSystem = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var commandBuffer = commandBufferSystem.CreateCommandBuffer(state.WorldUnmanaged);
+            var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
-            foreach (var (chunk, chunkEntity) in Query<Chunk>()
+            foreach (var (chunk, chunkEntity) in SystemAPI
+                .Query<RefRO<Chunk>>()
                 .WithAll<RawChunk>()
                 .WithNone<ThreadedChunk>()
                 .WithEntityAccess())
             {
                 var job = new ChunkGenerationJob
                 {
-                    Chunk = chunk,
+                    Chunk = chunk.ValueRO,
                 };
 
                 var handle = job.Schedule(Chunk.Volume, 1);
@@ -40,23 +41,23 @@ namespace Minecraft
                     Job = handle,
                 });
 
-                SetComponentEnabled<ThreadedChunk>(chunkEntity, true);
+                state.EntityManager.SetComponentEnabled<ThreadedChunk>(chunkEntity, true);
             }
 
-            foreach (var (task, taskEntity) in Query<Task>().WithEntityAccess())
+            foreach (var (task, entity) in SystemAPI.Query<RefRO<Task>>().WithEntityAccess())
             {
-                if (!task.Job.IsCompleted)
+                if (!task.ValueRO.Job.IsCompleted)
                 {
                     continue;
                 }
 
-                task.Job.Complete();
+                task.ValueRO.Job.Complete();
 
-                commandBuffer.RemoveComponent<RawChunk>(task.Chunk);
-                SetComponentEnabled<ThreadedChunk>(task.Chunk, false);
-                SetComponentEnabled<DirtyChunk>(task.Chunk, true);
+                commandBuffer.RemoveComponent<RawChunk>(task.ValueRO.Chunk);
+                state.EntityManager.SetComponentEnabled<ThreadedChunk>(task.ValueRO.Chunk, false);
+                state.EntityManager.SetComponentEnabled<DirtyChunk>(task.ValueRO.Chunk, true);
 
-                commandBuffer.DestroyEntity(taskEntity);
+                commandBuffer.DestroyEntity(entity);
             }
         }
     }

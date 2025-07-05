@@ -2,6 +2,7 @@
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 using static Unity.Entities.SystemAPI;
 
 namespace Minecraft
@@ -28,7 +29,7 @@ namespace Minecraft
 
                         bool isRendered = x != startX && x != endX && z != startZ && z != endZ;
 
-                        buffer.GetEntity(chunkCoordinate, out var chunkEntity);
+                        var chunkEntity = buffer.GetEntity(chunkCoordinate);
                         if (chunkEntity != Entity.Null)
                         {
                             if (isRendered)
@@ -76,6 +77,7 @@ namespace Minecraft
             foreach (var (_, entity) in Query<ChunkReloadingRequest>().WithEntityAccess())
             {
                 var requestEntity = state.EntityManager.CreateEntity();
+                
                 commandBuffer.AddComponent(requestEntity, new ChunkLoadingRequest
                 {
                     NewCenter = lastLoadingColumn

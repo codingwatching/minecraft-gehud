@@ -21,15 +21,10 @@ namespace Minecraft.Utilities
 
         public static int3 IndexToCoordinate(int index, int xMax, int yMax)
         {
-            return IndexToCoordinate(index, xMax, yMax, xMax * yMax);
-        }
-
-        public static int3 IndexToCoordinate(int index, int xMax, int yMax, int xyMax)
-        {
-            int z = index / xyMax;
-            index -= z * xyMax;
-            int y = index / xMax;
-            int x = index % xMax;
+            var z = index / (xMax * yMax);
+            index -= z * xMax * yMax;
+            var y = index / xMax;
+            var x = index % xMax;
             return new int3(x, y, z);
         }
     }
