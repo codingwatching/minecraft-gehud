@@ -11,7 +11,7 @@ namespace Minecraft
     public partial struct SetRpcSystemDynamicAssemblyListSystem : ISystem
     {
         [BurstCompile]
-        readonly void ISystem.OnCreate(ref SystemState state)
+        void ISystem.OnCreate(ref SystemState state)
         {
             SystemAPI.GetSingletonRW<RpcCollection>().ValueRW.DynamicAssemblyList = true;
             state.Enabled = false;

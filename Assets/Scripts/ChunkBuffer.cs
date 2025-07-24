@@ -30,7 +30,7 @@ namespace Minecraft
             return CoordinateToIndex(arrayCoordinate, Size, Height);
         }
 
-        public readonly bool IsOutOfBuffer(in int3 arrayCoordinate)
+        public bool IsOutOfBuffer(in int3 arrayCoordinate)
         {
             return arrayCoordinate.x < 0
                 || arrayCoordinate.y < 0

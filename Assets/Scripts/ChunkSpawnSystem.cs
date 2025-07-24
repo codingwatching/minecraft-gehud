@@ -12,7 +12,7 @@ namespace Minecraft
     public partial struct ChunkSpawnSystem : ISystem
     {
         [BurstCompile]
-        readonly void ISystem.OnUpdate(ref SystemState state)
+        void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);

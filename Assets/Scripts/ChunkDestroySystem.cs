@@ -11,7 +11,7 @@ namespace Minecraft
     public partial struct ChunkDestroySystem : ISystem
     {
         [BurstCompile]
-        readonly void ISystem.OnUpdate(ref SystemState state)
+        void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
 

@@ -1,6 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
+using UnityEngine.Rendering;
 
 namespace Minecraft
 {
@@ -34,14 +35,23 @@ namespace Minecraft
 
                 var handle = job.Schedule(Chunk.Volume, 1);
 
-                var taskEntity = commandBuffer.CreateEntity();
-                commandBuffer.AddComponent(taskEntity, new Task
+                if (state.EntityManager.IsComponentEnabled<ImmediateChunk>(chunkEntity))
                 {
-                    Chunk = chunkEntity,
-                    Job = handle,
-                });
+                    handle.Complete();
+                    ApplyJob(chunkEntity, commandBuffer);
+                }
+                else
+                {
+                    var taskEntity = commandBuffer.CreateEntity();
 
-                state.EntityManager.SetComponentEnabled<ThreadedChunk>(chunkEntity, true);
+                    commandBuffer.AddComponent(taskEntity, new Task
+                    {
+                        Chunk = chunkEntity,
+                        Job = handle,
+                    });
+
+                    state.EntityManager.SetComponentEnabled<ThreadedChunk>(chunkEntity, true);
+                }
             }
 
             foreach (var (task, entity) in SystemAPI.Query<RefRO<Task>>().WithEntityAccess())
@@ -53,12 +63,17 @@ namespace Minecraft
 
                 task.ValueRO.Job.Complete();
 
-                commandBuffer.RemoveComponent<RawChunk>(task.ValueRO.Chunk);
-                state.EntityManager.SetComponentEnabled<ThreadedChunk>(task.ValueRO.Chunk, false);
-                state.EntityManager.SetComponentEnabled<DirtyChunk>(task.ValueRO.Chunk, true);
+                ApplyJob(task.ValueRO.Chunk, commandBuffer);
 
                 commandBuffer.DestroyEntity(entity);
             }
+        }
+
+        private void ApplyJob(Entity entity, in EntityCommandBuffer commandBuffer)
+        {
+            commandBuffer.RemoveComponent<RawChunk>(entity);
+            commandBuffer.SetComponentEnabled<ThreadedChunk>(entity, false);
+            commandBuffer.SetComponentEnabled<DirtyChunk>(entity, true);
         }
     }
 }

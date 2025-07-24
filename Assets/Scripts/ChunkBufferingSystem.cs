@@ -10,7 +10,7 @@ namespace Minecraft
     public partial struct ChunkBufferingSystem : ISystem
     {
         [BurstCompile]
-        readonly void ISystem.OnCreate(ref SystemState state)
+        void ISystem.OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponentData(state.SystemHandle, new ChunkBuffer
             {
@@ -25,7 +25,7 @@ namespace Minecraft
         }
 
         [BurstCompile]
-        readonly void ISystem.OnUpdate(ref SystemState state)
+        void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);

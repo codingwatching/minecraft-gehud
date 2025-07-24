@@ -10,7 +10,7 @@ namespace Minecraft
     public partial struct GoInGameClientSystem : ISystem
     {
         [BurstCompile]
-        readonly void ISystem.OnCreate(ref SystemState state)
+        void ISystem.OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<PlayerSpawner>();
 
@@ -22,7 +22,7 @@ namespace Minecraft
         }
 
         [BurstCompile]
-        readonly void ISystem.OnUpdate(ref SystemState state)
+        void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
 

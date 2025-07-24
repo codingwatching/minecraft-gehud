@@ -1,10 +1,13 @@
 ﻿using Minecraft.Utilities;
+using System.Threading;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Entities.UniversalDelegates;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Rendering;
+using UnityEngine;
 using static Unity.Entities.SystemAPI;
 
 namespace Minecraft
@@ -34,6 +37,11 @@ namespace Minecraft
                 .WithNone<DisableRendering, ThreadedChunk, ChunkMeshData>()
                 .WithEntityAccess())
             {
+                if (state.EntityManager.IsComponentEnabled<ThreadedChunk>(chunkEntity))
+                {
+                    continue;
+                }
+
                 const int clasterLength = 3 * 3 * 3;
                 var claster = new NativeArray<NativeArray<Voxel>>(clasterLength, Allocator.Temp);
                 var clasterEntities = new NativeArray<Entity>(clasterLength, Allocator.Temp);
@@ -41,7 +49,7 @@ namespace Minecraft
 
                 var isClasterValid = true;
 
-                for (int i = 0; i < clasterLength; i++)
+                for (var i = 0; i < clasterLength; i++)
                 {
                     var coordinate = origin + IndexUtility.IndexToCoordinate(i, 3, 3);
                     var clasterEntity = buffer.ValueRW.GetEntity(coordinate);
@@ -67,17 +75,23 @@ namespace Minecraft
                 if (!isClasterValid)
                 {
                     claster.Dispose();
-                    clasterEntities.Dispose();
                     continue;
                 }
 
-                var jobClaster = new NativeArray<NativeArray<Voxel>>(clasterLength, Allocator.Persistent);
-                jobClaster.CopyFrom(claster);
+                var jobClaster = new NativeArray<Voxel>(clasterLength * Chunk.Volume, Allocator.Persistent);
+
+                for (var i = 0; i < clasterLength; i++)
+                {
+                    var voxels = claster[i];
+                    for (var j = 0; j < voxels.Length; j++)
+                    {
+                        jobClaster[i * Chunk.Volume + j] = voxels[j];
+                    }
+                }
+
                 claster.Dispose();
 
                 var jobClasterEntities = new NativeArray<Entity>(clasterLength, Allocator.Persistent);
-                jobClasterEntities.CopyFrom(clasterEntities);
-                clasterEntities.Dispose();
 
                 var job = new ChunkMeshDataJob
                 {
@@ -134,12 +148,11 @@ namespace Minecraft
                 {
                     if (clasterEntity != Entity.Null)
                     {
-                        state.EntityManager.SetComponentEnabled<ThreadedChunk>(clasterEntity, false);
+                        commandBuffer.SetComponentEnabled<ThreadedChunk>(clasterEntity, false);
                     }
                 }
 
-                task.ValueRO.Data.ClasterEntities.Dispose();
-                task.ValueRO.Data.Claster.Dispose();
+                task.ValueRO.Data.Dispose();
 
                 commandBuffer.DestroyEntity(taskEntity);
             }

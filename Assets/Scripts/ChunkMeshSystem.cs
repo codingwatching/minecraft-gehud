@@ -8,7 +8,6 @@ using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Rendering;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Minecraft
 {
@@ -58,7 +57,7 @@ namespace Minecraft
         }
 
         void ISystem.OnUpdate(ref SystemState state)
-        {
+        {   
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 

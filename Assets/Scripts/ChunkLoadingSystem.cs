@@ -59,14 +59,14 @@ namespace Minecraft
         }
 
         [BurstCompile]
-        readonly void ISystem.OnCreate(ref SystemState state)
+        void ISystem.OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<LastLoadingColumn>(state.SystemHandle);
             state.EntityManager.AddComponent<ChunkReloadingRequest>(state.EntityManager.CreateEntity());
         }
 
         [BurstCompile]
-        readonly void ISystem.OnUpdate(ref SystemState state)
+        void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);

@@ -1,4 +1,6 @@
 ﻿using Minecraft.Utilities;
+using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
@@ -7,12 +9,13 @@ using Unity.Mathematics;
 
 namespace Minecraft
 {
-    public struct ChunkMeshDataJob : IJob
+    [BurstCompile]
+    public struct ChunkMeshDataJob : IJob, IDisposable
     {
         [ReadOnly]
         public int3 Coordinate;
-        [ReadOnly, NativeDisableContainerSafetyRestriction]
-        public NativeArray<NativeArray<Voxel>> Claster;
+        [ReadOnly]
+        public NativeArray<Voxel> Claster;
         [ReadOnly]
         public NativeArray<Entity> ClasterEntities;
         [WriteOnly]
@@ -132,23 +135,22 @@ namespace Minecraft
 
             var sideLocalVoxelCoordinate = voxelCoordinate - sideChunkCoordinate * Chunk.Size;
 
-            sideChunkCoordinate -= Coordinate;
-            sideChunkCoordinate += new int3(1, 1, 1);
-            var clasterIndex = IndexUtility.CoordinateToIndex(sideChunkCoordinate, 3, 3);
-            var voxels = Claster[clasterIndex];
-
-            if (!voxels.IsCreated)
-            {
-                return default;
-            }
+            var clasterChunkCoordinate = sideChunkCoordinate - Coordinate + new int3(1, 1, 1);
+            var clasterIndex = IndexUtility.CoordinateToIndex(clasterChunkCoordinate, 3, 3);
 
             var sideLocalVoxelIndex = IndexUtility.CoordinateToIndex(sideLocalVoxelCoordinate, Chunk.Size, Chunk.Size);
-            return voxels[sideLocalVoxelIndex];
+            return Claster[clasterIndex * Chunk.Volume + sideLocalVoxelIndex];
         }
 
         private bool HasFace(in int3 localVoxelCoordinate)
         {
             return GetVoxel(localVoxelCoordinate).Block == Voxel.Air.Block;
+        }
+
+        public void Dispose()
+        {
+            Claster.Dispose();
+            ClasterEntities.Dispose();
         }
     }
 }
