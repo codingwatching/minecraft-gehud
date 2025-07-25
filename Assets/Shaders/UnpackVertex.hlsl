@@ -1,4 +1,4 @@
-void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out float4 Light)
+void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out float3 Norm, out float4 Light)
 {
     // Mask = 2 ^ Bit - 1
 #if defined(SHADER_API_D3D9) || defined(SHADER_API_D3D11) || defined(SHADER_API_D3D11_9X)
@@ -13,18 +13,33 @@ void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out flo
     uint yBit = 5u;
     uint zBit = 5u;
     uint iBit = 9u;
+    uint nBit = 3u;
 
     uint yMask = 31u;
     uint zMask = 31u;
     uint iMask = 511u;
+    uint nMask = 7u;
 
-    uint ziBit = zBit + iBit;
-    uint yziBit = yBit + ziBit;
+    uint inBit = iBit + nBit;
+    uint zinBit = zBit + inBit;
+    uint yzinBit = yBit + zinBit;
 
-    uint x = uint(aData >> yziBit);
-    uint y = uint((aData >> ziBit) & yMask);
-    uint z = uint((aData >> iBit) & zMask);
-    uint i = uint(aData & iMask);
+    uint x = uint(aData >> yzinBit);
+    uint y = uint((aData >> zinBit) & yMask);
+    uint z = uint((aData >> inBit) & zMask);
+    uint i = uint((aData >> nBit) & iMask);
+    uint n = uint(aData & nMask);
+
+    static const float3 normals[6] = {
+        float3(1.0f, 0.0f, 0.0f),
+        float3(-1.0f, 0.0f, 0.0f),
+        float3(0.0f, 1.0f, 0.0f),
+        float3(0.0f, -1.0f, 0.0f),
+        float3(0.0f, 1.0f, 0.0f),
+        float3(0.0f, -1.0f, 0.0f),
+    };
+
+    Norm = normals[n];
 
     Position = float3(x, y, z);
 
