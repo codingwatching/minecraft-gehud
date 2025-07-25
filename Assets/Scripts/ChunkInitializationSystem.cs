@@ -9,7 +9,7 @@ namespace Minecraft
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
-    public partial struct ChunkSpawnSystem : ISystem
+    public partial struct ChunkInitializationSystem : ISystem
     {
         [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
@@ -17,7 +17,7 @@ namespace Minecraft
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            foreach (var (request, chunkEntity) in SystemAPI.Query<RefRO<ChunkSpawnRequest>>().WithEntityAccess())
+            foreach (var (request, chunkEntity) in SystemAPI.Query<RefRO<ChunkInitializationRequest>>().WithEntityAccess())
             {
                 if (!request.ValueRO.IsVisible)
                 {
@@ -31,7 +31,7 @@ namespace Minecraft
                     Value = float4x4.Translate(position)
                 });
 
-                commandBuffer.SetName(chunkEntity, $"Chunk({request.ValueRO.Coordinate.x}, {request.ValueRO.Coordinate.y}, {request.ValueRO.Coordinate.z})");
+                commandBuffer.SetName(chunkEntity, "Chunk");
 
                 commandBuffer.AddComponent(chunkEntity, new Chunk
                 {
@@ -47,7 +47,7 @@ namespace Minecraft
                 commandBuffer.AddComponent<ImmediateChunk>(chunkEntity);
                 commandBuffer.SetComponentEnabled<ImmediateChunk>(chunkEntity, false);
 
-                commandBuffer.RemoveComponent<ChunkSpawnRequest>(chunkEntity);
+                commandBuffer.RemoveComponent<ChunkInitializationRequest>(chunkEntity);
             }
         }
     }

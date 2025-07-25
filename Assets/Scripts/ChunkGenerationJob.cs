@@ -1,5 +1,6 @@
 ﻿using Minecraft.Utilities;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Jobs;
 
 namespace Minecraft
@@ -8,20 +9,22 @@ namespace Minecraft
     public struct ChunkGenerationJob : IJobParallelFor
     {
         public Chunk Chunk;
+        [ReadOnly]
+        public ChunkGenerationNoise Noise;
 
         void IJobParallelFor.Execute(int index)
         {
-            var coordinate = IndexUtility.IndexToCoordinate(index, Chunk.Size, Chunk.Size);
+            var localCoordinate = IndexUtility.IndexToCoordinate(index, Chunk.Size, Chunk.Size);
+            var coordinate = Chunk.Coordinate * Chunk.Size + localCoordinate;
 
-            var globalY = coordinate.y + Chunk.Coordinate.y * Chunk.Size;
+            var continentalness = Noise.Continentalness.Sample2D(coordinate.x, coordinate.z);
+            var erosion = Noise.Erosion.Sample2D(coordinate.x, coordinate.z);
+            var peaksAndValleys = Noise.PeaksAndValleys.Sample2D(coordinate.x, coordinate.z);
+            var result = continentalness * erosion * peaksAndValleys;
 
-            if (globalY >= 8)
+            if (coordinate.y <= (int)(result * Chunk.Size * Chunk.Size))
             {
-                Chunk[index] = Voxel.Air;
-            }
-            else
-            {
-                Chunk[index] = Voxel.Stone;
+                Chunk[index] = new(Voxel.Stone);
             }
         }
     }

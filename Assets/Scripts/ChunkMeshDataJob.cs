@@ -44,7 +44,7 @@ namespace Minecraft
             var y = localVoxelCoordinate.y;
             var z = localVoxelCoordinate.z;
 
-            if (voxel.Block == Voxel.Air.Block)
+            if (voxel.Block == Voxel.Air)
             {
                 return;
             }
@@ -144,7 +144,7 @@ namespace Minecraft
 
         private bool HasFace(in int3 localVoxelCoordinate)
         {
-            return GetVoxel(localVoxelCoordinate).Block == Voxel.Air.Block;
+            return GetVoxel(localVoxelCoordinate).Block == Voxel.Air;
         }
 
         public void Dispose()

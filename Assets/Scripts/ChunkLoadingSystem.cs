@@ -44,7 +44,7 @@ namespace Minecraft
                         else
                         {
                             var newChunkEntity = state.EntityManager.CreateEntity();
-                            commandBuffer.AddComponent(newChunkEntity, new ChunkSpawnRequest
+                            commandBuffer.AddComponent(newChunkEntity, new ChunkInitializationRequest
                             {
                                 Coordinate = chunkCoordinate,
                                 IsVisible = isRendered

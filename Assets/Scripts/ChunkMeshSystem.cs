@@ -24,8 +24,6 @@ namespace Minecraft
 #endif
             ;
 
-        private const float chunkSizeHalf = Chunk.Size / 2.0f;
-
         private struct VertexAttributeDescriptors : IComponentData, IDisposable
         {
             public NativeArray<VertexAttributeDescriptor> Descriptors;
@@ -57,7 +55,7 @@ namespace Minecraft
         }
 
         void ISystem.OnUpdate(ref SystemState state)
-        {   
+        {
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
@@ -111,15 +109,15 @@ namespace Minecraft
             taskEntities.Dispose();
         }
 
-        private void ApplyJob(ref SystemState state, Entity entity, Mesh.MeshDataArray data, in EntityCommandBuffer commandBuffer)
+        private void ApplyJob(ref SystemState state, Entity chunkEntity, Mesh.MeshDataArray data, in EntityCommandBuffer commandBuffer)
         {
-            state.EntityManager.SetComponentEnabled<DirtyChunk>(entity, false);
-            commandBuffer.RemoveComponent<ChunkMeshData>(entity);
+            state.EntityManager.SetComponentEnabled<DirtyChunk>(chunkEntity, false);
+            commandBuffer.RemoveComponent<ChunkMeshData>(chunkEntity);
 
             var mesh = new Mesh();
             Mesh.ApplyAndDisposeWritableMeshData(data, mesh, UpdateFlags);
 
-            if (!state.EntityManager.HasComponent<RenderMeshArray>(entity))
+            if (!state.EntityManager.HasComponent<RenderMeshArray>(chunkEntity))
             {
                 var chunkMaterials = SystemAPI.ManagedAPI.GetSingleton<ChunkMaterials>();
 
@@ -136,78 +134,72 @@ namespace Minecraft
 
                 RenderMeshUtility.AddComponents
                 (
-                    entity,
+                    chunkEntity,
                     state.EntityManager,
-                    new RenderMeshDescription(ShadowCastingMode.Off),
+                    new RenderMeshDescription(ShadowCastingMode.On),
                     new RenderMeshArray(materials, meshes),
                     MaterialMeshInfo.FromRenderMeshArrayIndices(0, 0, 0)
                 );
 
-                commandBuffer.SetComponent(entity, new RenderBounds
-                {
-                    Value = new AABB
-                    {
-                        Center = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf),
-                        Extents = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf)
-                    }
-                });
+                const float chunkSizeHalf = Chunk.Size / 2.0f;
 
-                var coordinate = state.EntityManager.GetComponentData<Chunk>(entity).Coordinate;
+                var aabb = new AABB
+                {
+                    Center = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf),
+                    Extents = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf)
+                };
+
+                var renderBounds = new RenderBounds
+                {
+                    Value = aabb
+                };
+
+                var coordinate = state.EntityManager.GetComponentData<Chunk>(chunkEntity).Coordinate;
                 var position = coordinate * Chunk.Size;
 
-                commandBuffer.SetComponent(entity, new WorldRenderBounds
-                {
-                    Value = new AABB
-                    {
-                        Center = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf) + position,
-                        Extents = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf)
-                    }
-                });
+                aabb.Center += position;
 
-                var rendererEntity = state.EntityManager.CreateEntity();
-                commandBuffer.SetName(rendererEntity, $"TransparentChunk({coordinate.x}, {coordinate.y}, {coordinate.z})");
+                var worldRenderBounds = new WorldRenderBounds
+                {
+                    Value = aabb
+                };
+
+                commandBuffer.SetComponent(chunkEntity, renderBounds);
+                commandBuffer.SetComponent(chunkEntity, worldRenderBounds);
+
+                var transparentChunkEntity = state.EntityManager.CreateEntity();
+                commandBuffer.SetName(transparentChunkEntity, "Transparent");
 
                 RenderMeshUtility.AddComponents
                 (
-                    rendererEntity,
+                    transparentChunkEntity,
                     state.EntityManager,
-                    new RenderMeshDescription(ShadowCastingMode.Off),
-                    state.EntityManager.GetSharedComponentManaged<RenderMeshArray>(entity),
+                    new RenderMeshDescription(ShadowCastingMode.On),
+                    state.EntityManager.GetSharedComponentManaged<RenderMeshArray>(chunkEntity),
                     MaterialMeshInfo.FromRenderMeshArrayIndices(1, 0, 1)
                 );
 
-                commandBuffer.SetComponent(rendererEntity, new RenderBounds
+                commandBuffer.SetComponent(transparentChunkEntity, renderBounds);
+                commandBuffer.SetComponent(transparentChunkEntity, worldRenderBounds);
+
+                commandBuffer.AddComponent(transparentChunkEntity, new Parent
                 {
-                    Value = new AABB
-                    {
-                        Center = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf),
-                        Extents = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf)
-                    }
+                    Value = chunkEntity
                 });
 
-                commandBuffer.SetComponent(rendererEntity, new WorldRenderBounds
+                var linked = commandBuffer.AddBuffer<LinkedEntityGroup>(chunkEntity);
+                linked.Add(new LinkedEntityGroup
                 {
-                    Value = new AABB
-                    {
-                        Center = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf) + position,
-                        Extents = new float3(chunkSizeHalf, chunkSizeHalf, chunkSizeHalf)
-                    }
+                    Value = chunkEntity
                 });
-
-                commandBuffer.AddComponent(rendererEntity, new LocalToWorld
+                linked.Add(new LinkedEntityGroup
                 {
-                    Value = float4x4.Translate(position)
-                });
-
-                var buffer = commandBuffer.AddBuffer<SubChunk>(entity);
-                buffer.Add(new SubChunk
-                {
-                    Value = rendererEntity
+                    Value = transparentChunkEntity
                 });
             }
             else
             {
-                state.EntityManager.GetSharedComponentManaged<RenderMeshArray>(entity).MeshReferences[0] = mesh;
+                state.EntityManager.GetSharedComponentManaged<RenderMeshArray>(chunkEntity).MeshReferences[0] = mesh;
             }
         }
     }

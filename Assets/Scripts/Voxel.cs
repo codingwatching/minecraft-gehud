@@ -2,9 +2,8 @@ namespace Minecraft
 {
     public struct Voxel
     {
-        public static Voxel Air => new(0);
-
-        public static Voxel Stone => new(1);
+        public const int Air = 0;
+        public const int Stone = 1;
 
         public byte Block;
 

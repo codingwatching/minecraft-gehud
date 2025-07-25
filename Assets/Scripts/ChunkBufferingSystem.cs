@@ -5,7 +5,7 @@ using static Unity.Entities.SystemAPI;
 namespace Minecraft
 {
     [BurstCompile]
-    [UpdateBefore(typeof(ChunkSpawnSystem))]
+    [UpdateBefore(typeof(ChunkInitializationSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkBufferingSystem : ISystem
     {

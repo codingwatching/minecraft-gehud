@@ -1,12 +1,13 @@
 ﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using UnityEngine.Rendering;
+using UnityEngine;
 
 namespace Minecraft
 {
-    [BurstCompile]
-    [UpdateAfter(typeof(ChunkSpawnSystem))]
+    [UpdateAfter(typeof(ChunkInitializationSystem))]
+    [UpdateAfter(typeof(ChunkGenerationNoiseSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationSystem : ISystem
     {
@@ -22,6 +23,8 @@ namespace Minecraft
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
+            var noise = SystemAPI.GetSingleton<ChunkGenerationNoise>();
+
             foreach (var (chunk, chunkEntity) in SystemAPI
                 .Query<RefRO<Chunk>>()
                 .WithAll<RawChunk>()
@@ -31,6 +34,7 @@ namespace Minecraft
                 var job = new ChunkGenerationJob
                 {
                     Chunk = chunk.ValueRO,
+                    Noise = noise
                 };
 
                 var handle = job.Schedule(Chunk.Volume, 1);

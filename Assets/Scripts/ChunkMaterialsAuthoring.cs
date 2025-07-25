@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Minecraft
 {
+    [DisallowMultipleComponent]
     public class ChunkMaterialsAuthoring : MonoBehaviour
     {
         [SerializeField]

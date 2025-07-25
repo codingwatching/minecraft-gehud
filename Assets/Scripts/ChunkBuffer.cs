@@ -140,7 +140,7 @@ namespace Minecraft
                         var newZ = z - centerDelta.y;
                         if (newX < 0 || newZ < 0 || newX >= Size || newZ >= Size)
                         {
-                            commandBuffer.AddComponent<ChunkToDestroy>(chunk);
+                            commandBuffer.DestroyEntity(chunk);
                             continue;
                         }
 
