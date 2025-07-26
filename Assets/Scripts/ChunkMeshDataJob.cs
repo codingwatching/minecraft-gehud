@@ -1,4 +1,4 @@
-﻿using Minecraft.Utilities;
+﻿using Voxilarium.Utilities;
 using System;
 using Unity.Burst;
 using Unity.Collections;
@@ -7,7 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     public struct ChunkMeshDataJob : IJob, IDisposable
@@ -20,6 +20,8 @@ namespace Minecraft
         public NativeArray<Entity> ClasterEntities;
         [WriteOnly]
         public ChunkMeshData Data;
+        [ReadOnly]
+        public Blocks Blocks;
 
         private ushort vertexCount;
 
@@ -40,80 +42,98 @@ namespace Minecraft
         private void ProcessVoxel(int3 localVoxelCoordinate)
         {
             var voxel = GetVoxel(localVoxelCoordinate);
-            var x = localVoxelCoordinate.x;
-            var y = localVoxelCoordinate.y;
-            var z = localVoxelCoordinate.z;
+            var x = (uint)localVoxelCoordinate.x;
+            var y = (uint)localVoxelCoordinate.y;
+            var z = (uint)localVoxelCoordinate.z;
 
             if (voxel.Block == Voxel.Air)
             {
                 return;
             }
 
-            var u = 0;
-            var v = 0;
-            var r = 0;
-            var g = 0;
-            var b = 0;
-            var s = 0;
+            var block = Blocks.Value[voxel.Block];
+
+            var r = 0u;
+            var g = 0u;
+            var b = 0u;
+            var s = 0u;
 
             // Right face.
             if (HasFace(localVoxelCoordinate + new int3(1, 0, 0)))
             {
+                var u = block.Textures.Right.x;
+                var v = block.Textures.Right.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u, v, Vertex.Normal.Right, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u, v, Vertex.Normal.Right, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u, v, Vertex.Normal.Right, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u, v, Vertex.Normal.Right, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u + 0, v + 0, Vertex.Normal.Right, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u + 0, v + 1, Vertex.Normal.Right, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u + 1, v + 1, Vertex.Normal.Right, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u + 1, v + 0, Vertex.Normal.Right, r, g, b, s));
             }
 
             // Left face.
             if (HasFace(localVoxelCoordinate + new int3(-1, 0, 0)))
             {
+                var u = block.Textures.Left.x;
+                var v = block.Textures.Left.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u, v, Vertex.Normal.Left, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u, v, Vertex.Normal.Left, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u, v, Vertex.Normal.Left, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u, v, Vertex.Normal.Left, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u + 0, v + 0, Vertex.Normal.Left, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u + 0, v + 1, Vertex.Normal.Left, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u + 1, v + 1, Vertex.Normal.Left, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u + 1, v + 0, Vertex.Normal.Left, r, g, b, s));
             }
 
             // Top face.
             if (HasFace(localVoxelCoordinate + new int3(0, 1, 0)))
             {
+                var u = block.Textures.Top.x;
+                var v = block.Textures.Top.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u, v, Vertex.Normal.Top, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u, v, Vertex.Normal.Top, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u, v, Vertex.Normal.Top, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u, v, Vertex.Normal.Top, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u + 0, v + 0, Vertex.Normal.Top, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u + 0, v + 1, Vertex.Normal.Top, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u + 1, v + 1, Vertex.Normal.Top, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u + 1, v + 0, Vertex.Normal.Top, r, g, b, s));
             }
 
             // Bottom face.
             if (HasFace(localVoxelCoordinate + new int3(0, -1, 0)))
             {
+                var u = block.Textures.Bottom.x;
+                var v = block.Textures.Bottom.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u, v, Vertex.Normal.Bottom, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u, v, Vertex.Normal.Bottom, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u, v, Vertex.Normal.Bottom, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u, v, Vertex.Normal.Bottom, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u + 0, v + 0, Vertex.Normal.Bottom, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u + 0, v + 1, Vertex.Normal.Bottom, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u + 1, v + 1, Vertex.Normal.Bottom, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u + 1, v + 0, Vertex.Normal.Bottom, r, g, b, s));
             }
 
             // Front face.
             if (HasFace(localVoxelCoordinate + new int3(0, 0, 1)))
             {
+                var u = block.Textures.Front.x;
+                var v = block.Textures.Front.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u, v, Vertex.Normal.Front, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u, v, Vertex.Normal.Front, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u, v, Vertex.Normal.Front, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u, v, Vertex.Normal.Front, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 1, u + 0, v + 0, Vertex.Normal.Front, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 1, u + 0, v + 1, Vertex.Normal.Front, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 1, u + 1, v + 1, Vertex.Normal.Front, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 1, u + 1, v + 0, Vertex.Normal.Front, r, g, b, s));
             }
 
             // Back face.
             if (HasFace(localVoxelCoordinate + new int3(0, 0, -1)))
             {
+                var u = block.Textures.Back.x;
+                var v = block.Textures.Back.y;
+
                 AddFaceIndices();
-                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u, v, Vertex.Normal.Back, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u, v, Vertex.Normal.Back, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u, v, Vertex.Normal.Back, r, g, b, s));
-                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u, v, Vertex.Normal.Back, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 0, z + 0, u + 0, v + 0, Vertex.Normal.Back, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 0, y + 1, z + 0, u + 0, v + 1, Vertex.Normal.Back, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 1, z + 0, u + 1, v + 1, Vertex.Normal.Back, r, g, b, s));
+                Data.Vertices.Add(new Vertex(x + 1, y + 0, z + 0, u + 1, v + 0, Vertex.Normal.Back, r, g, b, s));
             }
         }
 

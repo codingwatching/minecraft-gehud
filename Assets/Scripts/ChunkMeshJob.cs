@@ -4,7 +4,7 @@ using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     public struct ChunkMeshJob : IJob

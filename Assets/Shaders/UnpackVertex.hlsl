@@ -1,6 +1,5 @@
 void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out float3 Norm, out float4 Light)
 {
-    // Mask = 2 ^ Bit - 1
 #if defined(SHADER_API_D3D9) || defined(SHADER_API_D3D11) || defined(SHADER_API_D3D11_9X)
     uint aData = asuint(Data.x);
     uint bData = asuint(Data.y);
@@ -8,6 +7,8 @@ void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out flo
     uint aData = uint(Data.x);
     uint bData = uint(Data.y);
 #endif
+
+    // Mask = 2 ^ Bit - 1
 
     // A
     uint yBit = 5u;
@@ -30,23 +31,23 @@ void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out flo
     uint i = uint((aData >> nBit) & iMask);
     uint n = uint(aData & nMask);
 
+    Position = float3(x, y, z);
+
+    uint u = i % 17u;
+    uint v = i / 17u;
+    float uvStep = 16.0 / 256.0;
+    UV = float2(u * uvStep, v * uvStep);
+
     static const float3 normals[6] = {
         float3(1.0f, 0.0f, 0.0f),
         float3(-1.0f, 0.0f, 0.0f),
         float3(0.0f, 1.0f, 0.0f),
         float3(0.0f, -1.0f, 0.0f),
-        float3(0.0f, 1.0f, 0.0f),
-        float3(0.0f, -1.0f, 0.0f),
+        float3(0.0f, 0.0f, 1.0f),
+        float3(0.0f, 0.0f, -1.0f),
     };
 
     Norm = normals[n];
-
-    Position = float3(x, y, z);
-
-    uint u = i % 17;
-    uint v = i / 17;
-    float uvStep = 16.0 / 256.0;
-    UV = float2(u * uvStep, v * uvStep);
 
     // B
     uint gBit = 6u;
@@ -64,5 +65,5 @@ void UnpackVertex_float(float2 Data, out float3 Position, out float2 UV, out flo
     float g = int((bData >> bsBit) & gMask) / 4.0 / 16.0;
     float b = int((bData >> sBit) & bMask) / 4.0 / 16.0;
     float s = int(bData & sMask) / 4.0 / 16.0;
-    Light = float4(r, g, b, s);
+    Light = float4(r, g, b, s);    
 }

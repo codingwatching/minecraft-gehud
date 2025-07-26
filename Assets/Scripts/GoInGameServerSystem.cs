@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]

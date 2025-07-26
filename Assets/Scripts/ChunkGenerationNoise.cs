@@ -1,7 +1,7 @@
 using System;
 using Unity.Entities;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct ChunkGenerationNoise : IComponentData, IDisposable
     {

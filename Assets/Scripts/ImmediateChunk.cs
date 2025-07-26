@@ -1,6 +1,6 @@
 ﻿using Unity.Entities;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct ImmediateChunk : IComponentData, IEnableableComponent
     {

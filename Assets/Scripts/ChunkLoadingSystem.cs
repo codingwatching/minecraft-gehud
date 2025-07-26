@@ -1,11 +1,11 @@
-﻿using Minecraft.Utilities;
+﻿using Voxilarium.Utilities;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 using static Unity.Entities.SystemAPI;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     [UpdateAfter(typeof(ChunkBufferingSystem))]

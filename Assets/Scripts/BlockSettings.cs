@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [CreateAssetMenu(fileName = "Block", menuName = "Voxilarium/Block Settings")]
     public class BlockSettings : ScriptableObject
@@ -9,11 +9,15 @@ namespace Minecraft
         public bool IsTransparent => isTransparent;
         public int Absorption => absorption;
 
+        public Textures Textures => textures;
+
         [SerializeField]
         private bool isSolid = true;
         [SerializeField]
         private bool isTransparent = false;
         [SerializeField, Range(0, 15)]
         private int absorption = 0;
+        [SerializeField]
+        private Textures textures;
     }
 }

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Unity.Entities;
 
-namespace Minecraft
+namespace Voxilarium
 {
-    public class BlockDatabase : IComponentData
+    public class BlockSettingsDatabase : IComponentData
     {
         public List<BlockSettings> Data;
     }

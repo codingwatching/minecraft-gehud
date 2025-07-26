@@ -1,4 +1,4 @@
-namespace Minecraft
+namespace Voxilarium
 {
     public struct Voxel
     {

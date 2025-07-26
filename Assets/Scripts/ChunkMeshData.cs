@@ -2,7 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct ChunkMeshData : IComponentData, IDisposable
     {

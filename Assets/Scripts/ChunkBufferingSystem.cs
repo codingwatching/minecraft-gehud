@@ -2,7 +2,7 @@
 using Unity.Entities;
 using static Unity.Entities.SystemAPI;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     [UpdateBefore(typeof(ChunkInitializationSystem))]

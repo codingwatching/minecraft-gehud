@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace Minecraft.Utilities
+namespace Voxilarium.Utilities
 {
     public static class CoordinateUtility
     {

@@ -3,20 +3,20 @@ using System.Linq;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [DisallowMultipleComponent]
-    public class BlockDatabaseAuthoring : MonoBehaviour
+    public class BlockSettingsDatabaseAuthoring : MonoBehaviour
     {
         [SerializeField]
         private List<BlockSettings> data = new();
 
-        private class Baker : Baker<BlockDatabaseAuthoring>
+        private class Baker : Baker<BlockSettingsDatabaseAuthoring>
         {
-            public override void Bake(BlockDatabaseAuthoring authoring)
+            public override void Bake(BlockSettingsDatabaseAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.None);
-                AddComponentObject(entity, new BlockDatabase
+                AddComponentObject(entity, new BlockSettingsDatabase
                 {
                     Data = authoring.data
                 });

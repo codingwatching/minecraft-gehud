@@ -2,7 +2,7 @@ using System;
 using Unity.Collections;
 using Unity.Mathematics;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct Noise : IDisposable
     {

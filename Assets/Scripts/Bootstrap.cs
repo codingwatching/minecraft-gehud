@@ -1,7 +1,7 @@
 using Unity.NetCode;
 using UnityEngine.Scripting;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [Preserve]
     public class Bootstrap : ClientServerBootstrap

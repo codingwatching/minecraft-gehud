@@ -1,7 +1,7 @@
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [CreateAssetMenu(menuName = "Voxilarium/Noise Settings")]
     public class NoiseSettings : ScriptableObject

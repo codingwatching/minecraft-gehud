@@ -12,7 +12,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55fc71f3d8d96d649bb17379632f2e6f, type: 3}
   m_Name: Stone
   m_EditorClassIdentifier: 
-  value:
-    IsSolid: 1
-    IsTransparent: 0
-    Absorption: 0
+  isSolid: 1
+  isTransparent: 0
+  absorption: 0
+  textures:
+    Right:
+      x: 1
+      y: 15
+    Left:
+      x: 1
+      y: 15
+    Top:
+      x: 1
+      y: 15
+    Bottom:
+      x: 1
+      y: 15
+    Front:
+      x: 1
+      y: 15
+    Back:
+      x: 1
+      y: 15

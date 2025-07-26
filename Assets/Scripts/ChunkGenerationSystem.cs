@@ -4,7 +4,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [UpdateAfter(typeof(ChunkInitializationSystem))]
     [UpdateAfter(typeof(ChunkGenerationNoiseSystem))]

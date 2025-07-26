@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using Unity.Rendering;
 
-namespace Minecraft.Utilities
+namespace Voxilarium.Utilities
 {
     public static class ChunkUtility
     {

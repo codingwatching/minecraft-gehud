@@ -1,6 +1,6 @@
 ﻿using Unity.NetCode;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct GoInGameRequest : IRpcCommand
     {

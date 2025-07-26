@@ -1,4 +1,4 @@
-﻿using Minecraft.Utilities;
+﻿using Voxilarium.Utilities;
 using System.Threading;
 using Unity.Burst;
 using Unity.Collections;
@@ -10,10 +10,11 @@ using Unity.Rendering;
 using UnityEngine;
 using static Unity.Entities.SystemAPI;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     [UpdateAfter(typeof(ChunkGenerationSystem))]
+    [UpdateAfter(typeof(BlockSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkMeshDataSystem : ISystem
     {
@@ -31,6 +32,8 @@ namespace Minecraft
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
             var buffer = GetSingletonRW<ChunkBuffer>();
+
+            var blocks = SystemAPI.GetSingleton<Blocks>();
 
             foreach (var (chunk, chunkEntity) in Query<RefRO<Chunk>>()
                 .WithAll<DirtyChunk>()
@@ -103,7 +106,8 @@ namespace Minecraft
                         Vertices = new(Allocator.Persistent),
                         OpaqueIndices = new(Allocator.Persistent),
                         TransparentIndices = new(Allocator.Persistent),
-                    }
+                    },
+                    Blocks = blocks
                 };
 
                 if (IsComponentEnabled<ImmediateChunk>(chunkEntity))

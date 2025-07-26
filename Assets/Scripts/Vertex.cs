@@ -1,7 +1,9 @@
 ﻿using Unity.Collections;
+using UnityEngine;
 using UnityEngine.Rendering;
+using Voxilarium.Utilities;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct Vertex
     {
@@ -24,11 +26,11 @@ namespace Minecraft
             return descriptors;
         }
 
-        public Vertex(int x, int y, int z, int u, int v, Normal normal, int r, int g, int b, int s)
+        public Vertex(uint x, uint y, uint z, uint u, uint v, Normal normal, uint r, uint g, uint b, uint s)
         {
-            var i = v * 17 + u;
+            var i = IndexUtility.CoordinateToIndex(u, v, 17);
 
-            var n = (int)normal;
+            var n = (uint)normal;
 
             // Layout:
             // A
@@ -54,8 +56,8 @@ namespace Minecraft
             var bsBit = bBit + sBit;
             var gbsBit = gBit + bsBit;
 
-            dataA = (uint)(x << yzinBit | y << zinBit | z << inBit | i << nBit | n);
-            dataB = (uint)(r << gbsBit | g << bsBit | b << sBit | s);
+            dataA = x << yzinBit | y << zinBit | z << inBit | i << nBit | n;
+            dataB = r << gbsBit | g << bsBit | b << sBit | s;
         }
     }
 }

@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationNoiseSystem : ISystem

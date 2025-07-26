@@ -2,7 +2,7 @@
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct InitialLoadingColumns : IComponentData
     {

@@ -1,7 +1,7 @@
 ﻿using Unity.Entities;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public class ChunkMaterials : IComponentData
     {

@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct Chunk : IComponentData, IDisposable
     {

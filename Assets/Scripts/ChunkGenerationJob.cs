@@ -1,9 +1,9 @@
-﻿using Minecraft.Utilities;
+﻿using Voxilarium.Utilities;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 
-namespace Minecraft
+namespace Voxilarium
 {
     [BurstCompile]
     public struct ChunkGenerationJob : IJobParallelFor

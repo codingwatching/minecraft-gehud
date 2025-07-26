@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public readonly struct NativeCurve : IDisposable
     {

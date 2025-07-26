@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace Minecraft.Utilities
+namespace Voxilarium.Utilities
 {
     public static class IndexUtility
     {
@@ -15,6 +15,11 @@ namespace Minecraft.Utilities
         }
 
         public static int CoordinateToIndex(int x, int y, int xMax)
+        {
+            return y * xMax + x;
+        }
+
+        public static uint CoordinateToIndex(uint x, uint y, uint xMax)
         {
             return y * xMax + x;
         }

@@ -2,9 +2,9 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using static Minecraft.Utilities.IndexUtility;
+using static Voxilarium.Utilities.IndexUtility;
 
-namespace Minecraft
+namespace Voxilarium
 {
     public struct ChunkBuffer : IComponentData, IDisposable
     {

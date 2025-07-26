@@ -268,7 +268,7 @@ GameObject:
   - component: {fileID: 1906569713}
   - component: {fileID: 1906569712}
   m_Layer: 0
-  m_Name: BlockDatabase
+  m_Name: BlockSettingsDatabase
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

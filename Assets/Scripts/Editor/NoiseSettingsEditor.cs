@@ -5,7 +5,7 @@ using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
 
-namespace Minecraft.Editor
+namespace Voxilarium.Editor
 {
     [CustomEditor(typeof(NoiseSettings))]
     public class NoiseSettingsEditor : UnityEditor.Editor
