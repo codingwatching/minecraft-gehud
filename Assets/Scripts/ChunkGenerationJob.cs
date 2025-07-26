@@ -22,9 +22,21 @@ namespace Voxilarium
             var peaksAndValleys = Noise.PeaksAndValleys.Sample2D(coordinate.x, coordinate.z);
             var result = continentalness * erosion * peaksAndValleys;
 
-            if (coordinate.y <= (int)(result * Chunk.Size * Chunk.Size))
+            var height = (int)(result * Chunk.Size * Chunk.Size);
+            if (coordinate.y <= height)
             {
-                Chunk[index] = new(Voxel.Stone);
+                if (coordinate.y == height)
+                {
+                    Chunk[index] = new(3);
+                }
+                else if (coordinate.y >= height - 5)
+                {
+                    Chunk[index] = new(2);
+                }
+                else
+                {
+                    Chunk[index] = new(1);
+                }
             }
         }
     }
