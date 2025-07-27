@@ -2,7 +2,7 @@
 
 namespace Voxilarium
 {
-    public struct Cube : IComponentData
+    public struct Player : IComponentData
     {
     }
 }

@@ -11,7 +11,7 @@ namespace Voxilarium
             public override void Bake(PlayerAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
-                AddComponent<Cube>(entity);
+                AddComponent<Player>(entity);
             }
         }
     }
