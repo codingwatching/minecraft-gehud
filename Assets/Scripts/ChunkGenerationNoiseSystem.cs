@@ -1,3 +1,4 @@
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -29,6 +30,15 @@ namespace Voxilarium
                     PeaksAndValleys = new Noise(settings.PeaksAndValleys, Allocator.Persistent),
                 }
             );
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var noise in SystemAPI.Query<RefRO<ChunkGenerationNoise>>())
+            {
+                noise.ValueRO.Dispose();
+            }
         }
     }
 }

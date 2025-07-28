@@ -1,4 +1,5 @@
 using System.Linq;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 
@@ -26,6 +27,15 @@ namespace Voxilarium
                     Value = new(settings.Data.Select(item => new Block(item)).ToArray(), Allocator.Persistent)
                 }
             );
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var blocks in SystemAPI.Query<RefRO<Blocks>>())
+            {
+                blocks.ValueRO.Dispose();
+            }
         }
     }
 }

@@ -52,6 +52,8 @@ namespace Voxilarium
             {
                 Descriptors = Vertex.CreateDescriptors(Allocator.Persistent)
             });
+
+            state.RequireForUpdate<ChunkMaterials>();
         }
 
         void ISystem.OnUpdate(ref SystemState state)
@@ -112,6 +114,7 @@ namespace Voxilarium
         private void ApplyJob(ref SystemState state, Entity chunkEntity, Mesh.MeshDataArray data, in EntityCommandBuffer commandBuffer)
         {
             state.EntityManager.SetComponentEnabled<DirtyChunk>(chunkEntity, false);
+            state.EntityManager.GetComponentData<ChunkMeshData>(chunkEntity).Dispose();
             commandBuffer.RemoveComponent<ChunkMeshData>(chunkEntity);
 
             var mesh = new Mesh();
@@ -200,6 +203,21 @@ namespace Voxilarium
             else
             {
                 state.EntityManager.GetSharedComponentManaged<RenderMeshArray>(chunkEntity).MeshReferences[0] = mesh;
+            }
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var descriptors in SystemAPI.Query<RefRO<VertexAttributeDescriptors>>())
+            {
+                descriptors.ValueRO.Dispose();
+            }
+
+            foreach (var task in SystemAPI.Query<RefRO<Task>>())
+            {
+                task.ValueRO.Job.Complete();
+                task.ValueRO.Data.Dispose();
             }
         }
     }

@@ -1,11 +1,9 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
-using static Unity.Entities.SystemAPI;
 
 namespace Voxilarium
 {
     [BurstCompile]
-    [UpdateBefore(typeof(ChunkInitializationSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkBufferingSystem : ISystem
     {
@@ -27,21 +25,30 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
         {
-            var commandBuffer = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+            var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
             var buffer = state.EntityManager.GetComponentDataRW<ChunkBuffer>(state.SystemHandle);
 
-            foreach (var (request, entity) in Query<RefRO<ChunkBufferingDistanceRequest>>().WithEntityAccess())
+            foreach (var (request, entity) in SystemAPI.Query<RefRO<ChunkBufferingDistanceRequest>>().WithEntityAccess())
             {
                 buffer.ValueRW.UpdateDistance(request.ValueRO.NewDistance);
                 commandBuffer.DestroyEntity(entity);
             }
 
-            foreach (var (request, entity) in Query<RefRO<ChunkBufferingCenterRequest>>().WithEntityAccess())
+            foreach (var (request, entity) in SystemAPI.Query<RefRO<ChunkBufferingCenterRequest>>().WithEntityAccess())
             {
                 buffer.ValueRW.UpdateCenter(request.ValueRO.NewCenter, commandBuffer);
                 commandBuffer.DestroyEntity(entity);
+            }
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var chunkBuffer in SystemAPI.Query<RefRO<ChunkBuffer>>())
+            {
+                chunkBuffer.ValueRO.Dispose();
             }
         }
     }

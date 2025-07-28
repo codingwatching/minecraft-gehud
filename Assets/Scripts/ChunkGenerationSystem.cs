@@ -1,12 +1,9 @@
 ﻿using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
-using UnityEngine;
 
 namespace Voxilarium
 {
-    [UpdateAfter(typeof(ChunkInitializationSystem))]
     [UpdateAfter(typeof(ChunkGenerationNoiseSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationSystem : ISystem
@@ -15,6 +12,12 @@ namespace Voxilarium
         {
             public Entity Chunk;
             public JobHandle Job;
+        }
+
+        [BurstCompile]
+        void ISystem.OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<ChunkGenerationNoise>();
         }
 
         [BurstCompile]
@@ -78,6 +81,20 @@ namespace Voxilarium
             commandBuffer.RemoveComponent<RawChunk>(entity);
             commandBuffer.SetComponentEnabled<ThreadedChunk>(entity, false);
             commandBuffer.SetComponentEnabled<DirtyChunk>(entity, true);
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var task in SystemAPI.Query<RefRO<Task>>())
+            {
+                task.ValueRO.Job.Complete();
+            }
+
+            foreach (var chunk in SystemAPI.Query<RefRO<Chunk>>())
+            {
+                chunk.ValueRO.Dispose();
+            }
         }
     }
 }

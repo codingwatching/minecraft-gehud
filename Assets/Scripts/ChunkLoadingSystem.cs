@@ -3,7 +3,9 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
-using static Unity.Entities.SystemAPI;
+using Unity.Transforms;
+using Unity.NetCode;
+using Unity.Collections;
 
 namespace Voxilarium
 {
@@ -27,12 +29,12 @@ namespace Voxilarium
                     {
                         var chunkCoordinate = new int3(x, y, z);
 
-                        bool isRendered = x != startX && x != endX && z != startZ && z != endZ;
+                        bool isVisible = x != startX && x != endX && z != startZ && z != endZ;
 
                         var chunkEntity = buffer.GetEntity(chunkCoordinate);
                         if (chunkEntity != Entity.Null)
                         {
-                            if (isRendered)
+                            if (isVisible)
                             {
                                 ChunkUtility.ShowChunk(state.EntityManager, commandBuffer, chunkEntity);
                             }
@@ -43,13 +45,7 @@ namespace Voxilarium
                         }
                         else
                         {
-                            var newChunkEntity = state.EntityManager.CreateEntity();
-                            commandBuffer.AddComponent(newChunkEntity, new ChunkInitializationRequest
-                            {
-                                Coordinate = chunkCoordinate,
-                                IsVisible = isRendered
-                            });
-
+                            var newChunkEntity = ChunkUtility.SpawnChunk(state.EntityManager, chunkCoordinate, isVisible);
                             var index = buffer.ToIndex(chunkCoordinate);
                             buffer.Chunks[index] = newChunkEntity;
                         }
@@ -58,40 +54,73 @@ namespace Voxilarium
             }
         }
 
+        private EntityQuery loadingRequests;
+
         [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<LastLoadingColumn>(state.SystemHandle);
             state.EntityManager.AddComponent<ChunkReloadingRequest>(state.EntityManager.CreateEntity());
+
+            loadingRequests = SystemAPI.QueryBuilder().WithAll<ChunkLoadingRequest>().Build();
         }
 
         [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
         {
-            var commandBuffer = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+            var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buffer = GetSingletonRW<ChunkBuffer>();
-            var lastLoadingColumn = state.EntityManager.GetComponentData<LastLoadingColumn>(state.SystemHandle).Value;
+            var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+            var lastLoadingColumn = state.EntityManager.GetComponentDataRW<LastLoadingColumn>(state.SystemHandle);
 
-            foreach (var (_, entity) in Query<ChunkReloadingRequest>().WithEntityAccess())
+            foreach (var playerTransform in SystemAPI.Query<RefRO<LocalToWorld>>().WithAll<Player, GhostOwnerIsLocal>())
             {
-                var requestEntity = state.EntityManager.CreateEntity();
-                
+                var chunkCoordinate = CoordinateUtility.ToChunk(new int3(playerTransform.ValueRO.Position));
+
+                var column = new int2(chunkCoordinate.x, chunkCoordinate.z);
+
+                if (column.x != lastLoadingColumn.ValueRO.Value.x && column.y != lastLoadingColumn.ValueRO.Value.y)
+                {
+                    var requestEntity = commandBuffer.CreateEntity();
+
+                    commandBuffer.AddComponent
+                    (
+                        requestEntity,
+                        new ChunkLoadingRequest
+                        {
+                            NewCenter = column
+                        }
+                    );
+
+                    lastLoadingColumn.ValueRW.Value = column;
+                }
+            }
+
+            foreach (var (_, entity) in SystemAPI.Query<ChunkReloadingRequest>().WithEntityAccess())
+            {
+                var requestEntity = commandBuffer.CreateEntity();
+
                 commandBuffer.AddComponent(requestEntity, new ChunkLoadingRequest
                 {
-                    NewCenter = lastLoadingColumn
+                    NewCenter = lastLoadingColumn.ValueRO.Value
                 });
 
                 commandBuffer.DestroyEntity(entity);
             }
 
-            foreach (var (request, entity) in Query<RefRO<ChunkLoadingRequest>>().WithEntityAccess())
+            var loadingRquestEntities = loadingRequests.ToEntityArray(Allocator.Temp);
+
+            foreach (var entity in loadingRquestEntities)
             {
-                buffer.ValueRW.UpdateCenter(request.ValueRO.NewCenter, commandBuffer);
-                UpdateLoading(ref state, ref buffer.ValueRW, request.ValueRO.NewCenter, buffer.ValueRO.Height, buffer.ValueRO.Distance, commandBuffer);
+                var request = state.EntityManager.GetComponentData<ChunkLoadingRequest>(entity);
+
+                buffer.ValueRW.UpdateCenter(request.NewCenter, commandBuffer);
+                UpdateLoading(ref state, ref buffer.ValueRW, request.NewCenter, buffer.ValueRO.Height, buffer.ValueRO.Distance, commandBuffer);
                 commandBuffer.DestroyEntity(entity);
             }
+
+            loadingRquestEntities.Dispose();
         }
     }
 }

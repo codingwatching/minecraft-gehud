@@ -8,7 +8,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Rendering;
 using UnityEngine;
-using static Unity.Entities.SystemAPI;
 
 namespace Voxilarium
 {
@@ -26,16 +25,22 @@ namespace Voxilarium
         }
 
         [BurstCompile]
+        void ISystem.OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<Blocks>();
+        }
+
+        [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
         {
-            var commandBuffer = GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+            var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buffer = GetSingletonRW<ChunkBuffer>();
+            var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
 
             var blocks = SystemAPI.GetSingleton<Blocks>();
 
-            foreach (var (chunk, chunkEntity) in Query<RefRO<Chunk>>()
+            foreach (var (chunk, chunkEntity) in SystemAPI.Query<RefRO<Chunk>>()
                 .WithAll<DirtyChunk>()
                 .WithNone<DisableRendering, ThreadedChunk, ChunkMeshData>()
                 .WithEntityAccess())
@@ -110,7 +115,7 @@ namespace Voxilarium
                     Blocks = blocks
                 };
 
-                if (IsComponentEnabled<ImmediateChunk>(chunkEntity))
+                if (state.EntityManager.IsComponentEnabled<ImmediateChunk>(chunkEntity))
                 {
                     job.Schedule().Complete();
                     commandBuffer.AddComponent(chunkEntity, job.Data);
@@ -137,7 +142,7 @@ namespace Voxilarium
                 }
             }
 
-            foreach (var (task, taskEntity) in Query<RefRO<Task>>().WithEntityAccess())
+            foreach (var (task, taskEntity) in SystemAPI.Query<RefRO<Task>>().WithEntityAccess())
             {
                 if (!task.ValueRO.Job.IsCompleted)
                 {
@@ -159,6 +164,16 @@ namespace Voxilarium
                 task.ValueRO.Data.Dispose();
 
                 commandBuffer.DestroyEntity(taskEntity);
+            }
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            foreach (var task in SystemAPI.Query<RefRO<Task>>())
+            {
+                task.ValueRO.Job.Complete();
+                task.ValueRO.Data.Dispose();
             }
         }
     }
