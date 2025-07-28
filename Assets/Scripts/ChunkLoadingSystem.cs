@@ -1,8 +1,7 @@
-﻿using Voxilarium.Utilities;
+using Voxilarium.Utilities;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 using Unity.Transforms;
 using Unity.NetCode;
 using Unity.Collections;
@@ -14,52 +13,17 @@ namespace Voxilarium
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkLoadingSystem : ISystem
     {
-        private static void UpdateLoading(ref SystemState state, ref ChunkBuffer buffer, in int2 column, int height, int distance, in EntityCommandBuffer commandBuffer)
-        {
-            var startX = column.x - distance - ChunkBuffer.BufferDistance;
-            var endX = column.x + distance + ChunkBuffer.BufferDistance;
-            var startZ = column.y - distance - ChunkBuffer.BufferDistance;
-            var endZ = column.y + distance + ChunkBuffer.BufferDistance;
-
-            for (var x = startX; x <= endX; x++)
-            {
-                for (var z = startZ; z <= endZ; z++)
-                {
-                    for (int y = 0; y < height; y++)
-                    {
-                        var chunkCoordinate = new int3(x, y, z);
-
-                        bool isVisible = x != startX && x != endX && z != startZ && z != endZ;
-
-                        var chunkEntity = buffer.GetEntity(chunkCoordinate);
-                        if (chunkEntity != Entity.Null)
-                        {
-                            if (isVisible)
-                            {
-                                ChunkUtility.ShowChunk(state.EntityManager, commandBuffer, chunkEntity);
-                            }
-                            else
-                            {
-                                ChunkUtility.HideChunk(state.EntityManager, commandBuffer, chunkEntity);
-                            }
-                        }
-                        else
-                        {
-                            var newChunkEntity = ChunkUtility.SpawnChunk(state.EntityManager, chunkCoordinate, isVisible);
-                            var index = buffer.ToIndex(chunkCoordinate);
-                            buffer.Chunks[index] = newChunkEntity;
-                        }
-                    }
-                }
-            }
-        }
+        public const int ColumnBatchSize = 1;
 
         private EntityQuery loadingRequests;
 
-        [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<LastLoadingColumn>(state.SystemHandle);
+            state.EntityManager.AddComponentData(state.SystemHandle, new ChunkColumnLoadingQueue
+            {
+                Value = new(Allocator.Persistent),
+            });
             state.EntityManager.AddComponent<ChunkReloadingRequest>(state.EntityManager.CreateEntity());
 
             loadingRequests = SystemAPI.QueryBuilder().WithAll<ChunkLoadingRequest>().Build();
@@ -71,7 +35,6 @@ namespace Voxilarium
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
             var lastLoadingColumn = state.EntityManager.GetComponentDataRW<LastLoadingColumn>(state.SystemHandle);
 
             foreach (var playerTransform in SystemAPI.Query<RefRO<LocalToWorld>>().WithAll<Player, GhostOwnerIsLocal>())
@@ -109,18 +72,53 @@ namespace Voxilarium
                 commandBuffer.DestroyEntity(entity);
             }
 
+            var loadingQueue = state.EntityManager.GetComponentData<ChunkColumnLoadingQueue>(state.SystemHandle);
+
             var loadingRquestEntities = loadingRequests.ToEntityArray(Allocator.Temp);
 
             foreach (var entity in loadingRquestEntities)
             {
+                var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+
                 var request = state.EntityManager.GetComponentData<ChunkLoadingRequest>(entity);
 
                 buffer.ValueRW.UpdateCenter(request.NewCenter, commandBuffer);
-                UpdateLoading(ref state, ref buffer.ValueRW, request.NewCenter, buffer.ValueRO.Height, buffer.ValueRO.Distance, commandBuffer);
+                loadingQueue.UpdateLoading(state.EntityManager, ref buffer.ValueRW, request.NewCenter, commandBuffer);
                 commandBuffer.DestroyEntity(entity);
             }
 
             loadingRquestEntities.Dispose();
+
+            for (var i = 0; i < ColumnBatchSize; i++)
+            {
+                if (loadingQueue.Value.Length > 0)
+                {
+                    var column = loadingQueue.Value[^1];
+                    loadingQueue.Value.RemoveAt(loadingQueue.Value.Length - 1);
+
+                    var x = column.x;
+                    var z = column.y;
+
+                    for (var y = 0; y < SystemAPI.GetSingletonRW<ChunkBuffer>().ValueRO.Height; y++)
+                    {
+                        var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+
+                        var coordinate = new int3(x, y, z);
+                        var entity = buffer.ValueRO.GetEntity(coordinate);
+
+                        if (entity == Entity.Null)
+                        {
+                            buffer.ValueRW.SpawnChunk(state.EntityManager, coordinate);
+                        }
+                    }
+                }
+            }
+        }
+
+        [BurstCompile]
+        void ISystem.OnDestroy(ref SystemState state)
+        {
+            state.EntityManager.GetComponentData<ChunkColumnLoadingQueue>(state.SystemHandle).Dispose();
         }
     }
 }

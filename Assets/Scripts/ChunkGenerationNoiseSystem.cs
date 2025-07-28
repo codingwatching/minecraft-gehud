@@ -1,7 +1,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using UnityEngine;
 
 namespace Voxilarium
 {
@@ -21,6 +20,7 @@ namespace Voxilarium
             }
 
             var settings = SystemAPI.ManagedAPI.GetSingleton<ChunkGenerationNoiseSettings>();
+
             state.EntityManager.CreateSingleton
             (
                 new ChunkGenerationNoise

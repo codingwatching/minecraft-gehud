@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Voxilarium.Utilities;
 using static Voxilarium.Utilities.IndexUtility;
 
 namespace Voxilarium
@@ -62,6 +63,20 @@ namespace Voxilarium
         {
             entity = GetEntity(coordinate);
             return entity != Entity.Null;
+        }
+
+        public Entity SpawnChunk(EntityManager entityManager, in int3 coordinate, bool isVisible = true)
+        {
+            if (GetEntity(coordinate) != Entity.Null)
+            {
+                throw new Exception("Chunk allready exists.");
+            }
+
+            var entity = ChunkUtility.SpawnChunk(entityManager, coordinate, isVisible);
+            var index = ToIndex(coordinate);
+            Chunks[index] = entity;
+
+            return entity;
         }
 
         public void UpdateDistance(int newDistance)
