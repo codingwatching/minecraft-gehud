@@ -219,6 +219,11 @@ namespace Voxilarium
                 task.ValueRO.Job.Complete();
                 task.ValueRO.Data.Dispose();
             }
+
+            foreach (var meshData in SystemAPI.Query<RefRO<ChunkMeshData>>())
+            {
+                meshData.ValueRO.Dispose();
+            }
         }
     }
 }

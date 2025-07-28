@@ -174,6 +174,7 @@ namespace Voxilarium
             {
                 task.ValueRO.Job.Complete();
                 task.ValueRO.Data.Dispose();
+                task.ValueRO.Data.Data.Dispose();
             }
         }
     }
