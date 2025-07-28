@@ -43,7 +43,7 @@ namespace Voxilarium
 
                 var column = new int2(chunkCoordinate.x, chunkCoordinate.z);
 
-                if (column.x != lastLoadingColumn.ValueRO.Value.x && column.y != lastLoadingColumn.ValueRO.Value.y)
+                if (column.x != lastLoadingColumn.ValueRO.Value.x || column.y != lastLoadingColumn.ValueRO.Value.y)
                 {
                     var requestEntity = commandBuffer.CreateEntity();
 
