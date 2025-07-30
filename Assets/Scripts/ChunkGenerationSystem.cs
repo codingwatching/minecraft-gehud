@@ -1,10 +1,11 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
+using Voxilarium;
 
 namespace Voxilarium
 {
-    [UpdateAfter(typeof(ChunkGenerationNoiseSystem))]
+    [UpdateAfter(typeof(NoiseSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationSystem : ISystem
     {
@@ -17,7 +18,7 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<ChunkGenerationNoise>();
+            state.RequireForUpdate<Noises>();
         }
 
         [BurstCompile]
@@ -26,7 +27,7 @@ namespace Voxilarium
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var noise = SystemAPI.GetSingleton<ChunkGenerationNoise>();
+            var noise = SystemAPI.GetSingleton<Noises>();
 
             foreach (var (chunk, chunkEntity) in SystemAPI
                 .Query<RefRO<Chunk>>()

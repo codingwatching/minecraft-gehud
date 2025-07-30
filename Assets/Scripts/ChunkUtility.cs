@@ -4,7 +4,7 @@ using Unity.Mathematics;
 using Unity.Rendering;
 using Unity.Transforms;
 
-namespace Voxilarium.Utilities
+namespace Voxilarium
 {
     public static class ChunkUtility
     {

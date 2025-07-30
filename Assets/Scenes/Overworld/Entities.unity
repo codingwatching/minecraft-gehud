@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 90818616}
   - component: {fileID: 90818615}
   m_Layer: 0
-  m_Name: ChunkGenerationNoiseSettings
+  m_Name: NoiseDescriptors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -268,7 +268,7 @@ GameObject:
   - component: {fileID: 1906569713}
   - component: {fileID: 1906569712}
   m_Layer: 0
-  m_Name: BlockSettingsDatabase
+  m_Name: BlockDescriptors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -286,7 +286,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d3e62c856a87ba4aaadd915ee8d5954, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  data:
+  items:
   - {fileID: 11400000, guid: 1113547f7905e5d4fa51111c6ae82540, type: 2}
   - {fileID: 11400000, guid: c23710d4890b1364298569e1a900e1e0, type: 2}
   - {fileID: 11400000, guid: f74ebb2fb5b83fa49bbecb66d5927d0b, type: 2}

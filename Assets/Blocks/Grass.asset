@@ -15,22 +15,10 @@ MonoBehaviour:
   isSolid: 1
   isTransparent: 0
   absorption: 0
-  textures:
-    Right:
-      x: 3
-      y: 15
-    Left:
-      x: 3
-      y: 15
-    Top:
-      x: 0
-      y: 15
-    Bottom:
-      x: 2
-      y: 15
-    Front:
-      x: 3
-      y: 15
-    Back:
-      x: 3
-      y: 15
+  sprites:
+    right: {fileID: 663160746, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    left: {fileID: 663160746, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    top: {fileID: 662316735, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    bottom: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    front: {fileID: 663160746, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    back: {fileID: 663160746, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}

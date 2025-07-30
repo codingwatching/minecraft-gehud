@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Voxilarium
 {
-    [CreateAssetMenu(menuName = "Voxilarium/Noise Settings")]
-    public class NoiseSettings : ScriptableObject
+    [CreateAssetMenu(fileName = "Noise", menuName = "Voxilarium/Noise Descriptor")]
+    public class NoiseDescriptor : ScriptableObject
     {
         public int3 Offset => offset;
 

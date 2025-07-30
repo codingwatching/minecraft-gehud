@@ -2,8 +2,6 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Voxilarium.Utilities;
-using static Voxilarium.Utilities.IndexUtility;
 
 namespace Voxilarium
 {
@@ -28,7 +26,7 @@ namespace Voxilarium
                 z = coordinate.z - Center.y + Distance + BufferDistance
             };
 
-            return CoordinateToIndex(arrayCoordinate, Size, Height);
+            return IndexUtility.CoordinateToIndex(arrayCoordinate, Size, Height);
         }
 
         public bool IsOutOfBuffer(in int3 arrayCoordinate)
@@ -55,7 +53,7 @@ namespace Voxilarium
                 return Entity.Null;
             }
 
-            var index = CoordinateToIndex(arrayCoordinate, Size, Height);
+            var index = IndexUtility.CoordinateToIndex(arrayCoordinate, Size, Height);
             return Chunks[index];
         }
 
@@ -103,7 +101,7 @@ namespace Voxilarium
                 {
                     for (var y = 0; y < Height; y++)
                     {
-                        var index = CoordinateToIndex(x, y, z, oldSize, Height);
+                        var index = IndexUtility.CoordinateToIndex(x, y, z, oldSize, Height);
 
                         var chunk = oldChunks[index];
                         if (chunk == Entity.Null)
@@ -118,7 +116,7 @@ namespace Voxilarium
                             continue;
                         }
 
-                        Chunks[CoordinateToIndex(newX, y, newZ, Size, Height)] = chunk;
+                        Chunks[IndexUtility.CoordinateToIndex(newX, y, newZ, Size, Height)] = chunk;
                     }
                 }
             }
@@ -143,7 +141,7 @@ namespace Voxilarium
                 {
                     for (var y = 0; y < Height; y++)
                     {
-                        var index = CoordinateToIndex(x, y, z, Size, Height);
+                        var index = IndexUtility.CoordinateToIndex(x, y, z, Size, Height);
 
                         var chunk = Chunks[index];
                         if (chunk == Entity.Null)
@@ -159,7 +157,7 @@ namespace Voxilarium
                             continue;
                         }
 
-                        var newIndex = CoordinateToIndex(newX, y, newZ, Size, Height);
+                        var newIndex = IndexUtility.CoordinateToIndex(newX, y, newZ, Size, Height);
                         Buffer[newIndex] = chunk;
                     }
                 }
@@ -190,7 +188,7 @@ namespace Voxilarium
             }
 
             var localCoordinate = coordinate - chunkCoordinate * Chunk.Size;
-            var index = CoordinateToIndex(localCoordinate, Chunk.Size, Chunk.Size);
+            var index = IndexUtility.CoordinateToIndex(localCoordinate, Chunk.Size, Chunk.Size);
             voxel = entityManager.GetComponentData<Chunk>(entity).Voxels[index];
         }
 

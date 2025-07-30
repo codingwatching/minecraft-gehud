@@ -5,14 +5,14 @@ using UnityEngine;
 
 namespace Voxilarium
 {
-    public readonly struct NativeCurve : IDisposable
+    public readonly struct Curve : IDisposable
     {
         public readonly NativeArray<Keyframe> Keyframes;
 
         private const float defaultWeight = 0.0f;
         private const int maxLookaheadCount = 3;
 
-        public NativeCurve(AnimationCurve curve, Allocator allocator)
+        public Curve(AnimationCurve curve, Allocator allocator)
         {
             Keyframes = new NativeArray<Keyframe>(curve.keys, allocator);
         }

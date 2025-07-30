@@ -3,7 +3,7 @@ using Unity.Entities;
 
 namespace Voxilarium
 {
-    public struct ChunkGenerationNoise : IComponentData, IDisposable
+    public struct Noises : IComponentData, IDisposable
     {
         public Noise Continentalness;
         public Noise Erosion;

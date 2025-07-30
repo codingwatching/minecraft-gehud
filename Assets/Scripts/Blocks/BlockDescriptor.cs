@@ -2,14 +2,14 @@ using UnityEngine;
 
 namespace Voxilarium
 {
-    [CreateAssetMenu(fileName = "Block", menuName = "Voxilarium/Block Settings")]
-    public class BlockSettings : ScriptableObject
+    [CreateAssetMenu(fileName = "Block", menuName = "Voxilarium/Block Descriptor")]
+    public class BlockDescriptor : ScriptableObject
     {
         public bool IsSolid => isSolid;
         public bool IsTransparent => isTransparent;
         public int Absorption => absorption;
 
-        public Textures Textures => textures;
+        public BlockSpriteDescriptor Sprites => sprites;
 
         [SerializeField]
         private bool isSolid = true;
@@ -18,6 +18,6 @@ namespace Voxilarium
         [SerializeField, Range(0, 15)]
         private int absorption = 0;
         [SerializeField]
-        private Textures textures;
+        private BlockSpriteDescriptor sprites;
     }
 }

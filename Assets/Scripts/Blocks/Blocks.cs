@@ -6,11 +6,11 @@ namespace Voxilarium
 {
     public struct Blocks : IComponentData, IDisposable
     {
-        public NativeArray<Block> Value;
+        public NativeArray<Block> Items;
 
         public void Dispose()
         {
-            Value.Dispose();
+            Items.Dispose();
         }
     }
 }

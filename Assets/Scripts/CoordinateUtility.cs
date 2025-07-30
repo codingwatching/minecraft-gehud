@@ -1,6 +1,6 @@
 ﻿using Unity.Mathematics;
 
-namespace Voxilarium.Utilities
+namespace Voxilarium
 {
     public static class CoordinateUtility
     {

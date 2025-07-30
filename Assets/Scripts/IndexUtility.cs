@@ -1,6 +1,7 @@
-﻿using Unity.Mathematics;
+﻿using Unity.Entities.UniversalDelegates;
+using Unity.Mathematics;
 
-namespace Voxilarium.Utilities
+namespace Voxilarium
 {
     public static class IndexUtility
     {
@@ -19,6 +20,11 @@ namespace Voxilarium.Utilities
             return y * xMax + x;
         }
 
+        public static int CoordinateToIndex(in int2 coordinate, int xMax)
+        {
+            return CoordinateToIndex(coordinate.x, coordinate.y, xMax);
+        }
+
         public static uint CoordinateToIndex(uint x, uint y, uint xMax)
         {
             return y * xMax + x;
@@ -30,7 +36,14 @@ namespace Voxilarium.Utilities
             index -= z * xMax * yMax;
             var y = index / xMax;
             var x = index % xMax;
-            return new int3(x, y, z);
+            return new(x, y, z);
+        }
+
+        public static int2 IndexToCoordinate(int index, int xMax)
+        {
+            var x = index % xMax;
+            var y = index / xMax;
+            return new(x, y);
         }
     }
 }

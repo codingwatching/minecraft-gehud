@@ -1,7 +1,7 @@
-﻿using Voxilarium.Utilities;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Voxilarium;
 
 namespace Voxilarium
 {
@@ -10,7 +10,7 @@ namespace Voxilarium
     {
         public Chunk Chunk;
         [ReadOnly]
-        public ChunkGenerationNoise Noise;
+        public Noises Noise;
 
         void IJobParallelFor.Execute(int index)
         {

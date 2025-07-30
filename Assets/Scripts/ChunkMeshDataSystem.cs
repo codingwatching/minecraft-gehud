@@ -1,13 +1,11 @@
-﻿using Voxilarium.Utilities;
-using System.Threading;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Entities.UniversalDelegates;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Rendering;
 using UnityEngine;
+using Voxilarium;
 
 namespace Voxilarium
 {
@@ -28,6 +26,7 @@ namespace Voxilarium
         void ISystem.OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<Blocks>();
+            state.RequireForUpdate<AtlasSize>();
         }
 
         [BurstCompile]
@@ -39,6 +38,8 @@ namespace Voxilarium
             var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
 
             var blocks = SystemAPI.GetSingleton<Blocks>();
+
+            var atlasSize = SystemAPI.GetSingleton<AtlasSize>().Value;
 
             foreach (var (chunk, chunkEntity) in SystemAPI.Query<RefRO<Chunk>>()
                 .WithAll<DirtyChunk>()
@@ -112,7 +113,8 @@ namespace Voxilarium
                         OpaqueIndices = new(Allocator.Persistent),
                         TransparentIndices = new(Allocator.Persistent),
                     },
-                    Blocks = blocks
+                    Blocks = blocks,
+                    AtlasSize = atlasSize
                 };
 
                 if (state.EntityManager.IsComponentEnabled<ImmediateChunk>(chunkEntity))

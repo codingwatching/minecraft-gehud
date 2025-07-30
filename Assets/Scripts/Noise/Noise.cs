@@ -11,16 +11,16 @@ namespace Voxilarium
         public int Octaves;
         public float Lacunarity;
         public float Persistance;
-        public NativeCurve Modification;
+        public Curve Modification;
 
-        public Noise(NoiseSettings settings, Allocator allocator)
+        public Noise(NoiseDescriptor descriptor, Allocator allocator)
         {
-            Offset = settings.Offset;
-            Scale = settings.Scale;
-            Octaves = settings.Octaves;
-            Lacunarity = settings.Lacunarity;
-            Persistance = settings.Persistance;
-            Modification = new NativeCurve(settings.Modification, allocator);
+            Offset = descriptor.Offset;
+            Scale = descriptor.Scale;
+            Octaves = descriptor.Octaves;
+            Lacunarity = descriptor.Lacunarity;
+            Persistance = descriptor.Persistance;
+            Modification = new Curve(descriptor.Modification, allocator);
         }
 
         public float Sample2D(float x, float y)

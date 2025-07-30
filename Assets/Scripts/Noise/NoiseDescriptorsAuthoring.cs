@@ -4,24 +4,25 @@ using UnityEngine;
 namespace Voxilarium
 {
     [DisallowMultipleComponent]
-    public class ChunkGenerationNoiseSettingsAuthoring : MonoBehaviour
+    public class NoiseDescriptorsAuthoring : MonoBehaviour
     {
         [SerializeField]
-        private NoiseSettings continentalness;
+        private NoiseDescriptor continentalness;
         [SerializeField]
-        private NoiseSettings erosion;
+        private NoiseDescriptor erosion;
         [SerializeField]
-        private NoiseSettings peaksAndValleys;
+        private NoiseDescriptor peaksAndValleys;
 
-        private class Baker : Baker<ChunkGenerationNoiseSettingsAuthoring>
+        private class Baker : Baker<NoiseDescriptorsAuthoring>
         {
-            public override void Bake(ChunkGenerationNoiseSettingsAuthoring authoring)
+            public override void Bake(NoiseDescriptorsAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.None);
+                
                 AddComponentObject
                 (
                     entity,
-                    new ChunkGenerationNoiseSettings
+                    new NoiseDescriptors
                     {
                         Continentalness = authoring.continentalness,
                         Erosion = authoring.erosion,

@@ -7,8 +7,8 @@ using UnityEngine;
 
 namespace Voxilarium.Editor
 {
-    [CustomEditor(typeof(NoiseSettings))]
-    public class NoiseSettingsEditor : UnityEditor.Editor
+    [CustomEditor(typeof(NoiseDescriptor))]
+    public class NoiseDescriptorEditor : UnityEditor.Editor
     {
         private const int previewSize = 256;
 
@@ -83,7 +83,7 @@ namespace Voxilarium.Editor
 
         private void UpdatePreview()
         {
-            var settings = (NoiseSettings)target;
+            var settings = (NoiseDescriptor)target;
 
             var noise = new Noise(settings, Allocator.TempJob);
             noise.Scale /= zoom;
