@@ -6,10 +6,12 @@ namespace Voxilarium
         public const int Stone = 1;
 
         public byte Block;
+        public Lighting Lighting;
 
         public Voxel(byte block)
         {
             Block = block;
+            Lighting = default;
         }
     }
 }

@@ -168,7 +168,7 @@ namespace Voxilarium
             Center = newCenter;
         }
 
-        public void GetVoxel(in EntityManager entityManager, in int3 coordinate, out Voxel voxel)
+        public void GetVoxel(EntityManager entityManager, in int3 coordinate, out Voxel voxel)
         {
             var chunkCoordinate = new int3
             {
@@ -192,7 +192,7 @@ namespace Voxilarium
             voxel = entityManager.GetComponentData<Chunk>(entity).Voxels[index];
         }
 
-        public void MarkDirtyIfExistsImmediate(in EntityManager entityManager, in int3 chunkCoordinate)
+        public void MarkDirtyIfExistsImmediate(EntityManager entityManager, in int3 chunkCoordinate)
         {
             var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
@@ -204,19 +204,7 @@ namespace Voxilarium
             entityManager.SetComponentEnabled<ImmediateChunk>(entity, true);
         }
 
-        public void MarkDirtyIfExistsImmediate(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate)
-        {
-            var entity = GetEntity(chunkCoordinate);
-            if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
-            {
-                return;
-            }
-
-            commandBuffer.SetComponentEnabled<DirtyChunk>(entity, true);
-            commandBuffer.SetComponentEnabled<ImmediateChunk>(entity, true);
-        }
-
-        public void MarkDirtyIfExists(in EntityManager entityManager, in int3 chunkCoordinate)
+        public void MarkDirtyIfExists(EntityManager entityManager, in int3 chunkCoordinate)
         {
             var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity))
@@ -227,7 +215,7 @@ namespace Voxilarium
             entityManager.SetComponentEnabled<DirtyChunk>(entity, true);
         }
 
-        public void MarkDirtyIfExists(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate)
+        public void MarkDirtyIfExists(EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate)
         {
             var entity = GetEntity(chunkCoordinate);
             if (entity == Entity.Null || !entityManager.HasComponent<Chunk>(entity) || entityManager.IsComponentEnabled<DirtyChunk>(entity))
@@ -238,7 +226,7 @@ namespace Voxilarium
             commandBuffer.SetComponentEnabled<DirtyChunk>(entity, true);
         }
 
-        public void MarkDirtyIfNeededImmediate(in EntityManager entityManager, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
+        public void MarkDirtyIfNeededImmediate(EntityManager entityManager, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
         {
             if (localVoxelCoordinate.x == 0)
             {
@@ -271,40 +259,7 @@ namespace Voxilarium
             }
         }
 
-        public void MarkDirtyIfNeededImmediate(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
-        {
-            if (localVoxelCoordinate.x == 0)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(-1, 0, 0));
-            }
-
-            if (localVoxelCoordinate.y == 0)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(0, -1, 0));
-            }
-
-            if (localVoxelCoordinate.z == 0)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(0, 0, -1));
-            }
-
-            if (localVoxelCoordinate.x == Chunk.Size - 1)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(1, 0, 0));
-            }
-
-            if (localVoxelCoordinate.y == Chunk.Size - 1)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(0, 1, 0));
-            }
-
-            if (localVoxelCoordinate.z == Chunk.Size - 1)
-            {
-                MarkDirtyIfExistsImmediate(entityManager, commandBuffer, chunkCoordinate + new int3(0, 0, 1));
-            }
-        }
-
-        public void MarkDirtyIfNeeded(in EntityManager entityManager, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
+        public void MarkDirtyIfNeeded(EntityManager entityManager, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
         {
             if (localVoxelCoordinate.x == 0)
             {
@@ -337,7 +292,7 @@ namespace Voxilarium
             }
         }
 
-        public void MarkDirtyIfNeeded(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
+        public void MarkDirtyIfNeeded(EntityManager entityManager, in EntityCommandBuffer commandBuffer, in int3 chunkCoordinate, in int3 localVoxelCoordinate)
         {
             if (localVoxelCoordinate.x == 0)
             {

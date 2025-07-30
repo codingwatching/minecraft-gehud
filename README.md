@@ -1,2 +1,2 @@
-# minecraft
-A Minecraft clone.
+# Voxilarium
+Voxel engine written in C# with Unity.

@@ -98,6 +98,8 @@ namespace Voxilarium
                     var x = column.x;
                     var z = column.y;
 
+                    var lightRecalculationRequired = false;
+
                     for (var y = 0; y < SystemAPI.GetSingletonRW<ChunkBuffer>().ValueRO.Height; y++)
                     {
                         var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
@@ -107,8 +109,22 @@ namespace Voxilarium
 
                         if (entity == Entity.Null)
                         {
+                            lightRecalculationRequired = true;
                             buffer.ValueRW.SpawnChunk(state.EntityManager, coordinate);
                         }
+                    }
+
+                    if (lightRecalculationRequired)
+                    {
+                        var requestEntity = commandBuffer.CreateEntity();
+                        commandBuffer.AddComponent
+                        (
+                            requestEntity,
+                            new LightCalculationRequest
+                            {
+                                Column = column
+                            }
+                        );
                     }
                 }
             }
