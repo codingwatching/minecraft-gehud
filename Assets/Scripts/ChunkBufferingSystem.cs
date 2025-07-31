@@ -18,7 +18,7 @@ namespace Voxilarium
             var requestEntity = state.EntityManager.CreateEntity();
             state.EntityManager.AddComponentData(requestEntity, new ChunkBufferingDistanceRequest
             {
-                NewDistance = 4
+                NewDistance = 8
             });
         }
 

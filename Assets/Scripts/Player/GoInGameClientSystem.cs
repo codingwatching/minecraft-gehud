@@ -24,6 +24,13 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnUpdate(ref SystemState state)
         {
+            var waitingForLoading = SystemAPI.HasSingleton<InitialColumns>();
+
+            if (waitingForLoading)
+            {
+                return;
+            }
+
             var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (_, entity) in SystemAPI.Query<RefRO<NetworkId>>().WithEntityAccess().WithNone<NetworkStreamInGame>())

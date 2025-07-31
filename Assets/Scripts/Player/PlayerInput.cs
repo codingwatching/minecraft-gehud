@@ -8,7 +8,8 @@ namespace Voxilarium
         public float2 Movement;
         public float Elevation;
         public float2 Look;
-        public bool Attack;
-        public bool Defend;
+        public InputEvent Attack;
+        public InputEvent Defend;
+        public InputEvent Jump;
     }
 }

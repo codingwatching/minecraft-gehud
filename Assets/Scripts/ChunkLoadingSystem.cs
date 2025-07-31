@@ -4,10 +4,20 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.NetCode;
 using Unity.Collections;
+using System;
 
 namespace Voxilarium
 {
-    [BurstCompile]
+    public struct InitialColumns : IComponentData, IDisposable
+    {
+        public NativeList<int2> Value;
+
+        public void Dispose()
+        {
+            Value.Dispose();
+        }
+    }
+
     [UpdateAfter(typeof(ChunkBufferingSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkLoadingSystem : ISystem
@@ -16,6 +26,7 @@ namespace Voxilarium
 
         private EntityQuery loadingRequests;
 
+        [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
         {
             state.EntityManager.AddComponent<LastLoadingColumn>(state.SystemHandle);
@@ -26,6 +37,24 @@ namespace Voxilarium
             state.EntityManager.AddComponent<ChunkReloadingRequest>(state.EntityManager.CreateEntity());
 
             loadingRequests = SystemAPI.QueryBuilder().WithAll<ChunkLoadingRequest>().Build();
+
+            var initialColumns = new NativeList<int2>(Allocator.Persistent);
+
+            for (var x = -2; x < 2; x++)
+            {
+                for (var y = -2; y < 2; y++)
+                {
+                    initialColumns.Add(new int2(x, y));
+                }
+            }
+
+            state.EntityManager.CreateSingleton
+            (
+                new InitialColumns
+                {
+                    Value = initialColumns
+                }
+            );
         }
 
         [BurstCompile]
@@ -127,6 +156,46 @@ namespace Voxilarium
                             }
                         );
                     }
+                }
+            }
+
+            if (SystemAPI.TryGetSingletonEntity<InitialColumns>(out var initialColumnsEntity))
+            {
+                var initialColumns = state.EntityManager.GetComponentData<InitialColumns>(initialColumnsEntity);
+
+                var chunks = SystemAPI.GetSingletonRW<Chunks>();
+
+                for (var i = 0; i < initialColumns.Value.Length; i++)
+                {
+                    var column = initialColumns.Value[i];
+
+                    var x = column.x;
+                    var z = column.y;
+
+                    var isColumnComplete = true;
+
+                    for (var y = 0; y < SystemAPI.GetSingletonRW<Chunks>().ValueRO.Height; y++)
+                    {
+                        var coordinate = new int3(x, y, z);
+                        var chunkEntity = chunks.ValueRO.GetEntity(coordinate);
+
+                        if (chunkEntity == Entity.Null
+                        || state.EntityManager.HasComponent<NotIlluminatedChunk>(chunkEntity))
+                        {
+                            isColumnComplete = false;
+                            break;
+                        }
+                    }
+
+                    if (isColumnComplete)
+                    {
+                        initialColumns.Value.RemoveAt(i);
+                    }
+                }
+
+                if (initialColumns.Value.Length == 0)
+                {
+                    commandBuffer.DestroyEntity(initialColumnsEntity);
                 }
             }
         }

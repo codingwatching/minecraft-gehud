@@ -187,7 +187,7 @@ namespace Voxilarium
             return entityManager.GetComponentData<Chunk>(entity).Voxels[index];
         }
 
-        public void DestroyVoxel(EntityManager entityManager, in Chunks chunks, in Blocks blocks, in Lighting lighting, in int3 coordinate)
+        public void DestroyVoxel(EntityManager entityManager, in Blocks blocks, in Lighting lighting, in int3 coordinate)
         {
             var chunkCoordinate = CoordinateUtility.ToChunk(coordinate);
 
@@ -212,12 +212,12 @@ namespace Voxilarium
             entityManager.SetComponentEnabled<ImmediateChunk>(chunkEntity, true);
             MarkDirtyIfNeededImmediate(entityManager, chunkCoordinate, localVoxelCoordinate);
 
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Red);
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Green);
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Blue);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Red);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Green);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Blue);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Red);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Green);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Blue);
 
             var topVoxel = GetVoxel(entityManager, coordinate + new int3(0, 1, 0));
 
@@ -232,44 +232,44 @@ namespace Voxilarium
                         break;
                     }
 
-                    lighting.AddLight(entityManager, chunks, bottomVoxelCoordinate, LightChanel.Sun, Light.Max);
+                    lighting.AddLight(entityManager, this, bottomVoxelCoordinate, LightChanel.Sun, Light.Max);
                 }
             }
 
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Red);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Red);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Red);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Red);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Red);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Red);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(1, 0, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(-1, 0, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 1, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, -1, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, 1), LightChanel.Red);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, -1), LightChanel.Red);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Red);
 
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Green);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Green);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Green);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Green);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Green);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Green);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(1, 0, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(-1, 0, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 1, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, -1, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, 1), LightChanel.Green);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, -1), LightChanel.Green);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Green);
 
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Blue);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Blue);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Blue);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Blue);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Blue);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Blue);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(1, 0, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(-1, 0, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 1, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, -1, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, 1), LightChanel.Blue);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, -1), LightChanel.Blue);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Blue);
 
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Sun);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Sun);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Sun);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Sun);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Sun);
-            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Sun);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(1, 0, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(-1, 0, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 1, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, -1, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, 1), LightChanel.Sun);
+            lighting.AddLight(entityManager, this, coordinate + new int3(0, 0, -1), LightChanel.Sun);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Sun);
         }
 
-        public void PlaceVoxel(EntityManager entityManager, in Chunks chunks, in Blocks blocks, in Lighting lighting, in int3 coordinate, ushort blockId)
+        public void PlaceVoxel(EntityManager entityManager, in Blocks blocks, in Lighting lighting, in int3 coordinate, ushort blockId)
         {
             var chunkCoordinate = CoordinateUtility.ToChunk(coordinate);
 
@@ -294,10 +294,10 @@ namespace Voxilarium
             entityManager.SetComponentEnabled<ImmediateChunk>(entity, true);
             MarkDirtyIfNeededImmediate(entityManager, chunkCoordinate, localVoxelCoordinate);
 
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Red);
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Green);
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Blue);
-            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Sun);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Red);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Green);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Blue);
+            lighting.RemoveLight(entityManager, this, coordinate, LightChanel.Sun);
 
             for (int y = coordinate.y - 1; y >= 0; y--)
             {
@@ -308,32 +308,32 @@ namespace Voxilarium
                     break;
                 }
 
-                lighting.RemoveLight(entityManager, chunks, bottomVoxelCoordinate, LightChanel.Sun);
+                lighting.RemoveLight(entityManager, this, bottomVoxelCoordinate, LightChanel.Sun);
             }
 
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
-            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Sun);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Red);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Green);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Blue);
+            lighting.Calculate(entityManager, this, blocks, LightChanel.Sun);
 
             var emission = blocks.Items[blockId].Emission;
 
             if (emission.Red != 0)
             {
-                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Red, emission.Red);
-                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+                lighting.AddLight(entityManager, this, coordinate, LightChanel.Red, emission.Red);
+                lighting.Calculate(entityManager, this, blocks, LightChanel.Red);
             }
 
             if (emission.Green != 0)
             {
-                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Green, emission.Green);
-                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+                lighting.AddLight(entityManager, this, coordinate, LightChanel.Green, emission.Green);
+                lighting.Calculate(entityManager, this, blocks, LightChanel.Green);
             }
 
             if (emission.Blue != 0)
             {
-                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Blue, emission.Blue);
-                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+                lighting.AddLight(entityManager, this, coordinate, LightChanel.Blue, emission.Blue);
+                lighting.Calculate(entityManager, this, blocks, LightChanel.Blue);
             }
         }
 
