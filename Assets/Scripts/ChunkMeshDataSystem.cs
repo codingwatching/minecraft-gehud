@@ -1,5 +1,7 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -30,12 +32,12 @@ namespace Voxilarium
         }
 
         [BurstCompile]
-        void ISystem.OnUpdate(ref SystemState state)
+        unsafe void ISystem.OnUpdate(ref SystemState state)
         {
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+            var chunks = SystemAPI.GetSingletonRW<Chunks>();
 
             var blocks = SystemAPI.GetSingleton<Blocks>();
 
@@ -44,6 +46,7 @@ namespace Voxilarium
             foreach (var (chunk, chunkEntity) in SystemAPI.Query<RefRO<Chunk>>()
                 .WithAll<DirtyChunk>()
                 .WithNone<DisableRendering, ThreadedChunk, ChunkMeshData>()
+                .WithNone<NotIlluminatedChunk>()
                 .WithEntityAccess())
             {
                 if (state.EntityManager.IsComponentEnabled<ThreadedChunk>(chunkEntity))
@@ -52,7 +55,7 @@ namespace Voxilarium
                 }
 
                 const int clasterLength = 3 * 3 * 3;
-                var claster = new NativeArray<NativeArray<Voxel>>(clasterLength, Allocator.Temp);
+                var claster = new NativeArray<IntPtr>(clasterLength, Allocator.Temp);
                 var clasterEntities = new NativeArray<Entity>(clasterLength, Allocator.Temp);
                 var origin = chunk.ValueRO.Coordinate - new int3(1, 1, 1);
 
@@ -61,20 +64,20 @@ namespace Voxilarium
                 for (var i = 0; i < clasterLength; i++)
                 {
                     var coordinate = origin + IndexUtility.IndexToCoordinate(i, 3, 3);
-                    var clasterEntity = buffer.ValueRW.GetEntity(coordinate);
+                    var clasterEntity = chunks.ValueRW.GetEntity(coordinate);
 
                     var isValidChunk = clasterEntity != Entity.Null
-                        && !state.EntityManager.HasComponent<RawChunk>(clasterEntity)
+                        && !state.EntityManager.HasComponent<NotGeneratedChunk>(clasterEntity)
                         && !state.EntityManager.IsComponentEnabled<ThreadedChunk>(clasterEntity);
 
                     if (isValidChunk)
                     {
-                        claster[i] = state.EntityManager.GetComponentData<Chunk>(clasterEntity).Voxels;
+                        claster[i] = new IntPtr(state.EntityManager.GetComponentData<Chunk>(clasterEntity).Voxels.GetUnsafeReadOnlyPtr());
                         clasterEntities[i] = clasterEntity;
                     }
                     else if (!isValidChunk
                         && coordinate.y != -1
-                        && coordinate.y != buffer.ValueRO.Height)
+                        && coordinate.y != chunks.ValueRO.Height)
                     {
                         isClasterValid = false;
                         break;
@@ -87,20 +90,13 @@ namespace Voxilarium
                     continue;
                 }
 
-                var jobClaster = new NativeArray<Voxel>(clasterLength * Chunk.Volume, Allocator.Persistent);
-
-                for (var i = 0; i < clasterLength; i++)
-                {
-                    var voxels = claster[i];
-                    for (var j = 0; j < voxels.Length; j++)
-                    {
-                        jobClaster[i * Chunk.Volume + j] = voxels[j];
-                    }
-                }
-
+                var jobClaster = new NativeArray<IntPtr>(clasterLength, Allocator.Persistent);
+                jobClaster.CopyFrom(claster);
                 claster.Dispose();
 
                 var jobClasterEntities = new NativeArray<Entity>(clasterLength, Allocator.Persistent);
+                jobClasterEntities.CopyFrom(clasterEntities);
+                clasterEntities.Dispose();
 
                 var job = new ChunkMeshDataJob
                 {

@@ -2,7 +2,7 @@
 
 namespace Voxilarium
 {
-    public struct RawChunk : IComponentData
+    public struct NotGeneratedChunk : IComponentData
     {
     }
 }

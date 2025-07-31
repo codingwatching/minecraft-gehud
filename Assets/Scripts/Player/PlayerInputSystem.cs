@@ -42,6 +42,8 @@ namespace Voxilarium
                 playerInput.ValueRW.Movement = controls.Value.Player.Move.ReadValue<Vector2>();
                 playerInput.ValueRW.Elevation = controls.Value.Player.Elevation.ReadValue<float>();
                 playerInput.ValueRW.Look = controls.Value.Player.Look.ReadValue<Vector2>();
+                playerInput.ValueRW.Attack = controls.Value.Player.Attack.WasPressedThisFrame();
+                playerInput.ValueRW.Defend = controls.Value.Player.Defend.WasPressedThisFrame();
             }
         }
     }

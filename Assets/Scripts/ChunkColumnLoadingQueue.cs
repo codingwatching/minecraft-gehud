@@ -9,14 +9,14 @@ namespace Voxilarium
     {
         public NativeList<int2> Value;
 
-        public void UpdateLoading(EntityManager entityManager, ref ChunkBuffer buffer, in int2 center, in EntityCommandBuffer commandBuffer)
+        public void UpdateLoading(EntityManager entityManager, ref Chunks chunks, in int2 center, in EntityCommandBuffer commandBuffer)
         {
             Value.Clear();
 
-            var startX = center.x - buffer.Distance - ChunkBuffer.BufferDistance;
-            var endX = center.x + buffer.Distance + ChunkBuffer.BufferDistance;
-            var startZ = center.y - buffer.Distance - ChunkBuffer.BufferDistance;
-            var endZ = center.y + buffer.Distance + ChunkBuffer.BufferDistance;
+            var startX = center.x - chunks.Distance - Chunks.BufferDistance;
+            var endX = center.x + chunks.Distance + Chunks.BufferDistance;
+            var startZ = center.y - chunks.Distance - Chunks.BufferDistance;
+            var endZ = center.y + chunks.Distance + Chunks.BufferDistance;
 
             var x = startX;
             var z = endZ;
@@ -26,7 +26,7 @@ namespace Voxilarium
             int startZBound = startZ;
             int endZBound = endZ;
 
-            var size = buffer.Distance * 2 + 1 + ChunkBuffer.BufferDistance * 2;
+            var size = chunks.Distance * 2 + 1 + Chunks.BufferDistance * 2;
             int length = size * size;
             int direction = 0;
 
@@ -39,11 +39,11 @@ namespace Voxilarium
                     Value.Add(new int2(x, z));
                 }
 
-                for (int y = 0; y < buffer.Height; y++)
+                for (int y = 0; y < chunks.Height; y++)
                 {
                     var chunkCoordinate = new int3(x, y, z);
 
-                    var chunkEntity = buffer.GetEntity(chunkCoordinate);
+                    var chunkEntity = chunks.GetEntity(chunkCoordinate);
 
                     if (chunkEntity != Entity.Null)
                     {

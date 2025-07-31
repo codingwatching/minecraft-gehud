@@ -3,7 +3,7 @@ using Unity.Mathematics;
 
 namespace Voxilarium
 {
-    public struct LightCalculationRequest : IComponentData
+    public struct IlluminationRequest : IComponentData
     {
         public int2 Column;
     }

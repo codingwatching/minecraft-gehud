@@ -115,7 +115,7 @@ namespace Voxilarium
                     ""name"": ""Attack"",
                     ""type"": ""Button"",
                     ""id"": ""6c2ab1b8-8984-453a-af3d-a3c78ae1679a"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -124,7 +124,7 @@ namespace Voxilarium
                     ""name"": ""Interact"",
                     ""type"": ""Button"",
                     ""id"": ""852140f2-7766-474d-8707-702459ba45f3"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Hold"",
                     ""initialStateCheck"": false
@@ -182,6 +182,15 @@ namespace Voxilarium
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Defend"",
+                    ""type"": ""Button"",
+                    ""id"": ""197bfaf5-7e00-462d-99d0-37a2a65f98ee"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -407,17 +416,6 @@ namespace Voxilarium
                 },
                 {
                     ""name"": """",
-                    ""id"": ""b3c1c7f0-bd20-4ee7-a0f1-899b24bca6d7"",
-                    ""path"": ""<Keyboard>/enter"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Attack"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""cbac6039-9c09-46a1-b5f2-4e5124ccb5ed"",
                     ""path"": ""<Keyboard>/2"",
                     ""interactions"": """",
@@ -602,6 +600,17 @@ namespace Voxilarium
                     ""action"": ""Elevation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b73ea2e2-92fc-482b-9b48-28b6e83d284a"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Defend"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -1197,6 +1206,7 @@ namespace Voxilarium
             m_Player_Next = m_Player.FindAction("Next", throwIfNotFound: true);
             m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
             m_Player_Elevation = m_Player.FindAction("Elevation", throwIfNotFound: true);
+            m_Player_Defend = m_Player.FindAction("Defend", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1300,6 +1310,7 @@ namespace Voxilarium
         private readonly InputAction m_Player_Next;
         private readonly InputAction m_Player_Sprint;
         private readonly InputAction m_Player_Elevation;
+        private readonly InputAction m_Player_Defend;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -1351,6 +1362,10 @@ namespace Voxilarium
             /// Provides access to the underlying input action "Player/Elevation".
             /// </summary>
             public InputAction @Elevation => m_Wrapper.m_Player_Elevation;
+            /// <summary>
+            /// Provides access to the underlying input action "Player/Defend".
+            /// </summary>
+            public InputAction @Defend => m_Wrapper.m_Player_Defend;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1407,6 +1422,9 @@ namespace Voxilarium
                 @Elevation.started += instance.OnElevation;
                 @Elevation.performed += instance.OnElevation;
                 @Elevation.canceled += instance.OnElevation;
+                @Defend.started += instance.OnDefend;
+                @Defend.performed += instance.OnDefend;
+                @Defend.canceled += instance.OnDefend;
             }
 
             /// <summary>
@@ -1448,6 +1466,9 @@ namespace Voxilarium
                 @Elevation.started -= instance.OnElevation;
                 @Elevation.performed -= instance.OnElevation;
                 @Elevation.canceled -= instance.OnElevation;
+                @Defend.started -= instance.OnDefend;
+                @Defend.performed -= instance.OnDefend;
+                @Defend.canceled -= instance.OnDefend;
             }
 
             /// <summary>
@@ -1818,6 +1839,13 @@ namespace Voxilarium
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnElevation(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Defend" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnDefend(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

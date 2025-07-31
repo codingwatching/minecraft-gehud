@@ -2,17 +2,19 @@ using Unity.Mathematics;
 
 namespace Voxilarium
 {
-    public struct LightingEntry
+    public struct LightEntry
     {
         public int3 Coordinate;
         public byte Level;
 
-        public LightingEntry(int3 coordinate, byte level)
+        public LightEntry(int3 coordinate, byte level)
         {
             Coordinate = coordinate;
             Level = level;
         }
 
-        public LightingEntry(int x, int y, int z, byte level) : this(new int3(x, y, z), level) { }
+        public LightEntry(int x, int y, int z, byte level) : this(new int3(x, y, z), level)
+        {
+        }
     }
 }

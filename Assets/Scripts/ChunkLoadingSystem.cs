@@ -77,12 +77,12 @@ namespace Voxilarium
 
             foreach (var entity in loadingRquestEntities)
             {
-                var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+                var chunks = SystemAPI.GetSingletonRW<Chunks>();
 
                 var request = state.EntityManager.GetComponentData<ChunkLoadingRequest>(entity);
 
-                buffer.ValueRW.UpdateCenter(request.NewCenter, commandBuffer);
-                loadingQueue.UpdateLoading(state.EntityManager, ref buffer.ValueRW, request.NewCenter, commandBuffer);
+                chunks.ValueRW.UpdateCenter(request.NewCenter, commandBuffer);
+                loadingQueue.UpdateLoading(state.EntityManager, ref chunks.ValueRW, request.NewCenter, commandBuffer);
                 commandBuffer.DestroyEntity(entity);
             }
 
@@ -98,29 +98,30 @@ namespace Voxilarium
                     var x = column.x;
                     var z = column.y;
 
-                    var lightRecalculationRequired = false;
+                    var illuminationRequired = false;
 
-                    for (var y = 0; y < SystemAPI.GetSingletonRW<ChunkBuffer>().ValueRO.Height; y++)
+                    for (var y = 0; y < SystemAPI.GetSingletonRW<Chunks>().ValueRO.Height; y++)
                     {
-                        var buffer = SystemAPI.GetSingletonRW<ChunkBuffer>();
+                        var chunks = SystemAPI.GetSingletonRW<Chunks>();
 
                         var coordinate = new int3(x, y, z);
-                        var entity = buffer.ValueRO.GetEntity(coordinate);
+                        var entity = chunks.ValueRO.GetEntity(coordinate);
 
                         if (entity == Entity.Null)
                         {
-                            lightRecalculationRequired = true;
-                            buffer.ValueRW.SpawnChunk(state.EntityManager, coordinate);
+                            illuminationRequired = true;
+                            chunks.ValueRW.SpawnChunk(state.EntityManager, coordinate);
                         }
                     }
 
-                    if (lightRecalculationRequired)
+                    if (illuminationRequired)
                     {
                         var requestEntity = commandBuffer.CreateEntity();
+                        commandBuffer.SetName(requestEntity, $"IlluminationRequest({column.x}, {column.y})");
                         commandBuffer.AddComponent
                         (
                             requestEntity,
-                            new LightCalculationRequest
+                            new IlluminationRequest
                             {
                                 Column = column
                             }

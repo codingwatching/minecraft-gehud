@@ -4,6 +4,7 @@ namespace Voxilarium
     {
         public bool IsSolid;
         public bool IsTransparent;
+        public LightColor Emission;
         public int Absorption;
         public BlockSprites Sprites;
 
@@ -11,6 +12,7 @@ namespace Voxilarium
         {
             IsSolid = descriptor.IsSolid;
             IsTransparent = descriptor.IsTransparent;
+            Emission = descriptor.Emission;
             Absorption = descriptor.Absorption;
             Sprites = textures;
         }

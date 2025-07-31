@@ -24,7 +24,7 @@ namespace Voxilarium
             return descriptors;
         }
 
-        public Vertex(uint x, uint y, uint z, int uvIndex, Normal normal, uint r, uint g, uint b, uint s)
+        public Vertex(int x, int y, int z, int uvIndex, Normal normal, int r, int g, int b, int s)
         {
             var n = (uint)normal;
 
@@ -52,8 +52,8 @@ namespace Voxilarium
             var bsBit = bBit + sBit;
             var gbsBit = gBit + bsBit;
 
-            dataA = x << yznBit | y << znBit | z << nBit | n;
-            dataB = r << gbsBit | g << bsBit | b << sBit | s;
+            dataA = (uint)x << yznBit | (uint)y << znBit | (uint)z << nBit | n;
+            dataB = (uint)r << gbsBit | (uint)g << bsBit | (uint)b << sBit | (uint)s;
             dataC = (uint)uvIndex;
         }
     }

@@ -6,11 +6,11 @@ namespace Voxilarium
     [Serializable]
     public struct LightColor
     {
-        [Range(Lighting.Min, Lighting.Max)]
+        [Range(Light.Min, Light.Max)]
         public byte Red;
-        [Range(Lighting.Min, Lighting.Max)]
+        [Range(Light.Min, Light.Max)]
         public byte Green;
-        [Range(Lighting.Min, Lighting.Max)]
+        [Range(Light.Min, Light.Max)]
         public byte Blue;
     }
 }

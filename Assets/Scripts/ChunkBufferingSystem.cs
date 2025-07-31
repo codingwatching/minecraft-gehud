@@ -10,7 +10,7 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
         {
-            state.EntityManager.AddComponentData(state.SystemHandle, new ChunkBuffer
+            state.EntityManager.AddComponentData(state.SystemHandle, new Chunks
             {
                 Height = 16
             });
@@ -28,17 +28,17 @@ namespace Voxilarium
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var buffer = state.EntityManager.GetComponentDataRW<ChunkBuffer>(state.SystemHandle);
+            var chunks = state.EntityManager.GetComponentDataRW<Chunks>(state.SystemHandle);
 
             foreach (var (request, entity) in SystemAPI.Query<RefRO<ChunkBufferingDistanceRequest>>().WithEntityAccess())
             {
-                buffer.ValueRW.UpdateDistance(request.ValueRO.NewDistance);
+                chunks.ValueRW.UpdateDistance(request.ValueRO.NewDistance);
                 commandBuffer.DestroyEntity(entity);
             }
 
             foreach (var (request, entity) in SystemAPI.Query<RefRO<ChunkBufferingCenterRequest>>().WithEntityAccess())
             {
-                buffer.ValueRW.UpdateCenter(request.ValueRO.NewCenter, commandBuffer);
+                chunks.ValueRW.UpdateCenter(request.ValueRO.NewCenter, commandBuffer);
                 commandBuffer.DestroyEntity(entity);
             }
         }
@@ -46,7 +46,7 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnDestroy(ref SystemState state)
         {
-            foreach (var chunkBuffer in SystemAPI.Query<RefRO<ChunkBuffer>>())
+            foreach (var chunkBuffer in SystemAPI.Query<RefRO<Chunks>>())
             {
                 chunkBuffer.ValueRO.Dispose();
             }

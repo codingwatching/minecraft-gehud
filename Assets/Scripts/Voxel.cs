@@ -1,17 +1,28 @@
+using Unity.Mathematics;
+
 namespace Voxilarium
 {
     public struct Voxel
     {
-        public const int Air = 0;
-        public const int Stone = 1;
+        public const ushort Air = 0;
+        public const ushort Stone = 1;
 
-        public byte Block;
-        public Lighting Lighting;
+        public ushort Block;
+        public Light Light;
 
-        public Voxel(byte block)
+        public Voxel(ushort block)
         {
             Block = block;
-            Lighting = default;
+            Light = default;
         }
+
+        public static readonly int3[] Sides = {
+            new( 0,  0,  1),
+            new( 0,  0, -1),
+            new( 0,  1,  0),
+            new( 0, -1,  0),
+            new( 1,  0,  0),
+            new(-1,  0,  0),
+        };
     }
 }

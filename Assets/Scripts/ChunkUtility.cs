@@ -54,11 +54,12 @@ namespace Voxilarium
                 Voxels = new(Chunk.Volume, Allocator.Persistent)
             });
 
-            commandBuffer.AddComponent<RawChunk>(chunkEntity);
+            commandBuffer.AddComponent<NotGeneratedChunk>(chunkEntity);
+            commandBuffer.AddComponent<NotIlluminatedChunk>(chunkEntity);
             commandBuffer.AddComponent<ThreadedChunk>(chunkEntity);
             commandBuffer.SetComponentEnabled<ThreadedChunk>(chunkEntity, false);
             commandBuffer.AddComponent<DirtyChunk>(chunkEntity);
-            commandBuffer.SetComponentEnabled<DirtyChunk>(chunkEntity, false);
+            commandBuffer.SetComponentEnabled<DirtyChunk>(chunkEntity, true);
             commandBuffer.AddComponent<ImmediateChunk>(chunkEntity);
             commandBuffer.SetComponentEnabled<ImmediateChunk>(chunkEntity, false);
 

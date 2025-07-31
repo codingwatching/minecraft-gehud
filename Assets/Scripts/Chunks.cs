@@ -5,7 +5,7 @@ using Unity.Mathematics;
 
 namespace Voxilarium
 {
-    public struct ChunkBuffer : IComponentData, IDisposable
+    public struct Chunks : IComponentData, IDisposable
     {
         public const int BufferDistance = 1;
 
@@ -14,7 +14,7 @@ namespace Voxilarium
         public int Distance;
         public int Size;
 
-        public NativeArray<Entity> Chunks;
+        public NativeArray<Entity> Entities;
         public NativeArray<Entity> Buffer;
 
         public int ToIndex(in int3 coordinate)
@@ -54,7 +54,7 @@ namespace Voxilarium
             }
 
             var index = IndexUtility.CoordinateToIndex(arrayCoordinate, Size, Height);
-            return Chunks[index];
+            return Entities[index];
         }
 
         public bool TryGetEntity(in int3 coordinate, out Entity entity)
@@ -72,7 +72,7 @@ namespace Voxilarium
 
             var entity = ChunkUtility.SpawnChunk(entityManager, coordinate, isVisible);
             var index = ToIndex(coordinate);
-            Chunks[index] = entity;
+            Entities[index] = entity;
 
             return entity;
         }
@@ -80,12 +80,12 @@ namespace Voxilarium
         public void UpdateDistance(int newDistance)
         {
             var oldSize = Size;
-            var oldChunks = Chunks;
+            var oldChunks = Entities;
             Distance = newDistance;
             Size = Distance * 2 + 1 + BufferDistance * 2;
             var chunksVolume = Size * Size * Height;
 
-            Chunks = new NativeArray<Entity>(chunksVolume, Allocator.Persistent);
+            Entities = new NativeArray<Entity>(chunksVolume, Allocator.Persistent);
 
             if (Buffer.IsCreated)
             {
@@ -116,7 +116,7 @@ namespace Voxilarium
                             continue;
                         }
 
-                        Chunks[IndexUtility.CoordinateToIndex(newX, y, newZ, Size, Height)] = chunk;
+                        Entities[IndexUtility.CoordinateToIndex(newX, y, newZ, Size, Height)] = chunk;
                     }
                 }
             }
@@ -143,7 +143,7 @@ namespace Voxilarium
                     {
                         var index = IndexUtility.CoordinateToIndex(x, y, z, Size, Height);
 
-                        var chunk = Chunks[index];
+                        var chunk = Entities[index];
                         if (chunk == Entity.Null)
                         {
                             continue;
@@ -163,33 +163,178 @@ namespace Voxilarium
                 }
             }
 
-            (Buffer, Chunks) = (Chunks, Buffer);
+            (Buffer, Entities) = (Entities, Buffer);
 
             Center = newCenter;
         }
 
-        public void GetVoxel(EntityManager entityManager, in int3 coordinate, out Voxel voxel)
+        public Voxel GetVoxel(EntityManager entityManager, in int3 coordinate)
         {
-            var chunkCoordinate = new int3
-            {
-                x = (int)math.floor(coordinate.x / (float)Chunk.Size),
-                y = (int)math.floor(coordinate.y / (float)Chunk.Size),
-                z = (int)math.floor(coordinate.z / (float)Chunk.Size)
-            };
+            var chunkCoordinate = CoordinateUtility.ToChunk(coordinate);
 
             var entity = GetEntity(chunkCoordinate);
+
             if (entity == Entity.Null
+                || entityManager.IsComponentEnabled<ThreadedChunk>(entity)
                 || !entityManager.HasComponent<Chunk>(entity)
-                //|| entityManager.IsComponentEnabled<ThreadedChunk>(entity)
-                || entityManager.HasComponent<RawChunk>(entity))
+                || entityManager.HasComponent<NotGeneratedChunk>(entity))
             {
-                voxel = default;
+                return default;
+            }
+
+            var localCoordinate = CoordinateUtility.ToLocal(chunkCoordinate, coordinate);
+            var index = IndexUtility.CoordinateToIndex(localCoordinate, Chunk.Size, Chunk.Size);
+            return entityManager.GetComponentData<Chunk>(entity).Voxels[index];
+        }
+
+        public void DestroyVoxel(EntityManager entityManager, in Chunks chunks, in Blocks blocks, in Lighting lighting, in int3 coordinate)
+        {
+            var chunkCoordinate = CoordinateUtility.ToChunk(coordinate);
+
+            var chunkEntity = GetEntity(chunkCoordinate);
+
+            if (chunkEntity == Entity.Null
+                || entityManager.IsComponentEnabled<ThreadedChunk>(chunkEntity)
+                || !entityManager.HasComponent<Chunk>(chunkEntity)
+                || entityManager.HasComponent<NotGeneratedChunk>(chunkEntity))
+            {
                 return;
             }
 
-            var localCoordinate = coordinate - chunkCoordinate * Chunk.Size;
-            var index = IndexUtility.CoordinateToIndex(localCoordinate, Chunk.Size, Chunk.Size);
-            voxel = entityManager.GetComponentData<Chunk>(entity).Voxels[index];
+            var localVoxelCoordinate = coordinate - chunkCoordinate * Chunk.Size;
+
+            var chunk = entityManager.GetComponentData<Chunk>(chunkEntity);
+            var index = IndexUtility.CoordinateToIndex(localVoxelCoordinate, Chunk.Size, Chunk.Size);
+            var voxel = chunk.Voxels[index];
+            voxel.Block = Voxel.Air;
+            chunk.Voxels[index] = voxel;
+            entityManager.SetComponentEnabled<DirtyChunk>(chunkEntity, true);
+            entityManager.SetComponentEnabled<ImmediateChunk>(chunkEntity, true);
+            MarkDirtyIfNeededImmediate(entityManager, chunkCoordinate, localVoxelCoordinate);
+
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Red);
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Green);
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Blue);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+
+            var topVoxel = GetVoxel(entityManager, coordinate + new int3(0, 1, 0));
+
+            if (topVoxel.Block == Voxel.Air && topVoxel.Light.Sun == Light.Max)
+            {
+                for (var y = coordinate.y; y >= 0; y--)
+                {
+                    var bottomVoxelCoordinate = new int3(coordinate.x, y, coordinate.z);
+                    var bottomVoxel = GetVoxel(entityManager, bottomVoxelCoordinate);
+                    if (bottomVoxel.Block != Voxel.Air)
+                    {
+                        break;
+                    }
+
+                    lighting.AddLight(entityManager, chunks, bottomVoxelCoordinate, LightChanel.Sun, Light.Max);
+                }
+            }
+
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Red);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Red);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Red);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Green);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Green);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Green);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Blue);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Blue);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Blue);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(1, 0, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(-1, 0, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 1, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, -1, 0), LightChanel.Sun);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, 1), LightChanel.Sun);
+            lighting.AddLight(entityManager, chunks, coordinate + new int3(0, 0, -1), LightChanel.Sun);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Sun);
+        }
+
+        public void PlaceVoxel(EntityManager entityManager, in Chunks chunks, in Blocks blocks, in Lighting lighting, in int3 coordinate, ushort blockId)
+        {
+            var chunkCoordinate = CoordinateUtility.ToChunk(coordinate);
+
+            var entity = GetEntity(chunkCoordinate);
+
+            if (entity == Entity.Null
+                || entityManager.IsComponentEnabled<ThreadedChunk>(entity)
+                || !entityManager.HasComponent<Chunk>(entity)
+                || entityManager.HasComponent<NotGeneratedChunk>(entity))
+            {
+                return;
+            }
+
+            var localVoxelCoordinate = coordinate - chunkCoordinate * Chunk.Size;
+
+            var chunk = entityManager.GetComponentData<Chunk>(entity);
+            var index = IndexUtility.CoordinateToIndex(localVoxelCoordinate, Chunk.Size, Chunk.Size);
+            var voxel = chunk.Voxels[index];
+            voxel.Block = blockId;
+            chunk.Voxels[index] = voxel;
+            entityManager.SetComponentEnabled<DirtyChunk>(entity, true);
+            entityManager.SetComponentEnabled<ImmediateChunk>(entity, true);
+            MarkDirtyIfNeededImmediate(entityManager, chunkCoordinate, localVoxelCoordinate);
+
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Red);
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Green);
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Blue);
+            lighting.RemoveLight(entityManager, chunks, coordinate, LightChanel.Sun);
+
+            for (int y = coordinate.y - 1; y >= 0; y--)
+            {
+                var bottomVoxelCoordinate = new int3(coordinate.x, y, coordinate.z);
+                var bottomVoxel = GetVoxel(entityManager, bottomVoxelCoordinate);
+                if (!blocks.Items[(int)bottomVoxel.Block].IsTransparent)
+                {
+                    break;
+                }
+
+                lighting.RemoveLight(entityManager, chunks, bottomVoxelCoordinate, LightChanel.Sun);
+            }
+
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+            lighting.Calculate(entityManager, chunks, blocks, LightChanel.Sun);
+
+            var emission = blocks.Items[blockId].Emission;
+
+            if (emission.Red != 0)
+            {
+                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Red, emission.Red);
+                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Red);
+            }
+
+            if (emission.Green != 0)
+            {
+                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Green, emission.Green);
+                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Green);
+            }
+
+            if (emission.Blue != 0)
+            {
+                lighting.AddLight(entityManager, chunks, coordinate, LightChanel.Blue, emission.Blue);
+                lighting.Calculate(entityManager, chunks, blocks, LightChanel.Blue);
+            }
         }
 
         public void MarkDirtyIfExistsImmediate(EntityManager entityManager, in int3 chunkCoordinate)
@@ -327,7 +472,7 @@ namespace Voxilarium
 
         public void Dispose()
         {
-            Chunks.Dispose();
+            Entities.Dispose();
             Buffer.Dispose();
         }
     }

@@ -19,6 +19,7 @@ namespace Voxilarium
         void ISystem.OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<Noises>();
+            state.RequireForUpdate<Chunks>();
         }
 
         [BurstCompile]
@@ -27,18 +28,21 @@ namespace Voxilarium
             var commandBuffer = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var noise = SystemAPI.GetSingleton<Noises>();
+            var noise = SystemAPI.GetSingletonRW<Noises>();
+            var chunks = SystemAPI.GetSingletonRW<Chunks>();
 
             foreach (var (chunk, chunkEntity) in SystemAPI
-                .Query<RefRO<Chunk>>()
-                .WithAll<RawChunk>()
+                .Query<RefRW<Chunk>>()
+                .WithAll<NotGeneratedChunk>()
                 .WithNone<ThreadedChunk>()
                 .WithEntityAccess())
             {
                 var job = new ChunkGenerationJob
                 {
-                    Chunk = chunk.ValueRO,
-                    Noise = noise
+                    Coordinate = chunk.ValueRO.Coordinate,
+                    Height = chunks.ValueRO.Height,
+                    Noise = noise.ValueRO,
+                    Voxels = chunk.ValueRW.Voxels,
                 };
 
                 var handle = job.Schedule(Chunk.Volume, 1);
@@ -79,9 +83,8 @@ namespace Voxilarium
 
         private void ApplyJob(Entity entity, in EntityCommandBuffer commandBuffer)
         {
-            commandBuffer.RemoveComponent<RawChunk>(entity);
             commandBuffer.SetComponentEnabled<ThreadedChunk>(entity, false);
-            commandBuffer.SetComponentEnabled<DirtyChunk>(entity, true);
+            commandBuffer.RemoveComponent<NotGeneratedChunk>(entity);
         }
 
         [BurstCompile]
