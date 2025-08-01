@@ -1,4 +1,5 @@
 using Unity.NetCode;
+using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 
 namespace Voxilarium
@@ -8,8 +9,25 @@ namespace Voxilarium
     {
         public override bool Initialize(string defaultWorldName)
         {
-            AutoConnectPort = 7979;
-            return base.Initialize(defaultWorldName);
+            const string gameplayScene = "Overworld";
+
+            if (!DetermineIfBootstrappingEnabled())
+            {
+                return false;
+            }
+
+            if (SceneManager.GetActiveScene().name == gameplayScene)
+            {
+                AutoConnectPort = 7979;
+                CreateDefaultClientServerWorlds();
+            }
+            else
+            {
+                AutoConnectPort = 0;
+                CreateLocalWorld(defaultWorldName);
+            }
+
+            return true;
         }
     }
 }
