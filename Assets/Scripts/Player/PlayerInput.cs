@@ -1,9 +1,10 @@
+using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 
 namespace Voxilarium
 {
-    public struct PlayerInput : IInputComponentData
+    public struct PlayerInput : IComponentData
     {
         public float2 Movement;
         public float Elevation;

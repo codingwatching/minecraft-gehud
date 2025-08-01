@@ -18,7 +18,7 @@ namespace Voxilarium
         }
     }
 
-    [UpdateAfter(typeof(ChunkBufferingSystem))]
+    [UpdateAfter(typeof(ChunkSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkLoadingSystem : ISystem
     {

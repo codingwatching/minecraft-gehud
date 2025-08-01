@@ -2,13 +2,15 @@ using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Voxilarium
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateAfter(typeof(PlayerInputSystem))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PlayerMovementSystem : ISystem
     {
-        private const float jumpHeight = 1.0f;
+        private const float jumpHeight = 1.5f;
         private const float speed = 5.0f;
 
         [BurstCompile]
@@ -32,6 +34,7 @@ namespace Voxilarium
 
                 if (input.ValueRO.Jump.IsSet)
                 {
+                    Debug.Log("Jump");
                     velocity -= math.sign(PhysicsSystem.Gravity) * math.sqrt(2.0f * jumpHeight * math.abs(PhysicsSystem.Gravity));
                 }
 

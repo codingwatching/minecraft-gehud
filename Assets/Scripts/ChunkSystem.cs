@@ -3,9 +3,8 @@ using Unity.Entities;
 
 namespace Voxilarium
 {
-    [BurstCompile]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
-    public partial struct ChunkBufferingSystem : ISystem
+    public partial struct ChunkSystem : ISystem
     {
         [BurstCompile]
         void ISystem.OnCreate(ref SystemState state)
@@ -46,9 +45,14 @@ namespace Voxilarium
         [BurstCompile]
         void ISystem.OnDestroy(ref SystemState state)
         {
-            foreach (var chunkBuffer in SystemAPI.Query<RefRO<Chunks>>())
+            if (SystemAPI.TryGetSingleton(out Chunks chunks))
             {
-                chunkBuffer.ValueRO.Dispose();
+                chunks.Dispose();
+            }
+
+            foreach (var chunk in SystemAPI.Query<RefRO<Chunk>>())
+            {
+                chunk.ValueRO.Dispose();
             }
         }
     }

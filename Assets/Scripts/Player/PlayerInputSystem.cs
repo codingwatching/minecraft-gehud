@@ -1,8 +1,6 @@
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
 
 namespace Voxilarium
 {
@@ -11,7 +9,7 @@ namespace Voxilarium
         public Controls Value;
     }
 
-    [UpdateInGroup(typeof(GhostInputSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PlayerInputSystem : ISystem
     {
         void ISystem.OnCreate(ref SystemState state)

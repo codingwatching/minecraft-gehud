@@ -14,15 +14,16 @@ namespace Voxilarium
 
         void ISystem.OnUpdate(ref SystemState state)
         {
-            if (SystemAPI.HasSingleton<Noises>())
-            {
-                return;
-            }
+            var commandBuffer = SystemAPI
+                .GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>()
+                .CreateCommandBuffer(state.WorldUnmanaged);
 
-            var descriptors = SystemAPI.ManagedAPI.GetSingleton<NoiseDescriptors>();
+            var descriptorsEntity = SystemAPI.ManagedAPI.GetSingletonEntity<NoiseDescriptors>();
+            var descriptors = state.EntityManager.GetComponentObject<NoiseDescriptors>(descriptorsEntity);
 
-            state.EntityManager.CreateSingleton
+            commandBuffer.AddComponent
             (
+                commandBuffer.CreateEntity(),
                 new Noises
                 {
                     Continentalness = new Noise(descriptors.Continentalness, Allocator.Persistent),
@@ -30,6 +31,8 @@ namespace Voxilarium
                     PeaksAndValleys = new Noise(descriptors.PeaksAndValleys, Allocator.Persistent),
                 }
             );
+
+            commandBuffer.DestroyEntity(descriptorsEntity);
         }
 
         [BurstCompile]

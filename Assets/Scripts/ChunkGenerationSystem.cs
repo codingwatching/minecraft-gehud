@@ -1,11 +1,11 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
 using Unity.Jobs;
-using Voxilarium;
 
 namespace Voxilarium
 {
     [UpdateAfter(typeof(NoiseSystem))]
+    [UpdateAfter(typeof(ChunkSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkGenerationSystem : ISystem
     {
@@ -93,11 +93,6 @@ namespace Voxilarium
             foreach (var task in SystemAPI.Query<RefRO<Task>>())
             {
                 task.ValueRO.Job.Complete();
-            }
-
-            foreach (var chunk in SystemAPI.Query<RefRO<Chunk>>())
-            {
-                chunk.ValueRO.Dispose();
             }
         }
     }

@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace Voxilarium
 {
+    [UpdateAfter(typeof(PlayerInputSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PlayerInteractionSystem : ISystem
     {

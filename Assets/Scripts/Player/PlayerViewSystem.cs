@@ -6,9 +6,9 @@ using Unity.NetCode;
 using Unity.Transforms;
 
 namespace Voxilarium
-{   
-    [UpdateInGroup(typeof(GhostInputSystemGroup))]
+{
     [UpdateAfter(typeof(PlayerInputSystem))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PlayerViewSystem : ISystem
     {
         [BurstCompile]
