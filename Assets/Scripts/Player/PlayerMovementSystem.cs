@@ -34,7 +34,6 @@ namespace Voxilarium
 
                 if (input.ValueRO.Jump.IsSet)
                 {
-                    Debug.Log("Jump");
                     velocity -= math.sign(PhysicsSystem.Gravity) * math.sqrt(2.0f * jumpHeight * math.abs(PhysicsSystem.Gravity));
                 }
 

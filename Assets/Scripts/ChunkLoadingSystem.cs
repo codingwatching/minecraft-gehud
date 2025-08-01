@@ -139,7 +139,7 @@ namespace Voxilarium
                         if (entity == Entity.Null)
                         {
                             illuminationRequired = true;
-                            chunks.ValueRW.SpawnChunk(state.EntityManager, coordinate);
+                            chunks.ValueRW.SpawnChunk(commandBuffer, coordinate);
                         }
                     }
 

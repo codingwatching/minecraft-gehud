@@ -1,8 +1,14 @@
 ﻿using Unity.Burst;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Voxilarium
 {
+    public struct NewChunk : IComponentData
+    {
+        public int3 Coordinate;
+    }
+
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ChunkSystem : ISystem
     {
@@ -28,6 +34,15 @@ namespace Voxilarium
                 .CreateCommandBuffer(state.WorldUnmanaged);
 
             var chunks = state.EntityManager.GetComponentDataRW<Chunks>(state.SystemHandle);
+
+            foreach (var (newChunk, chunkEntity) in SystemAPI
+                .Query<RefRO<NewChunk>>()
+                .WithEntityAccess())
+            {
+                var index = chunks.ValueRO.ToIndex(newChunk.ValueRO.Coordinate);
+                chunks.ValueRW.Entities[index] = chunkEntity;
+                commandBuffer.RemoveComponent<NewChunk>(chunkEntity);
+            }
 
             foreach (var (request, entity) in SystemAPI.Query<RefRO<ChunkBufferingDistanceRequest>>().WithEntityAccess())
             {

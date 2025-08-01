@@ -8,31 +8,25 @@ namespace Voxilarium
 {
     public static class ChunkUtility
     {
-        public static void HideChunk(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in Entity chunkEntity)
-        {
-            if (entityManager.HasComponent<DisableRendering>(chunkEntity))
-            {
-                return;
-            }
-
-            commandBuffer.AddComponent<DisableRendering>(chunkEntity);
-        }
-
-        public static void ShowChunk(in EntityManager entityManager, in EntityCommandBuffer commandBuffer, in Entity chunkEntity)
+        public static void HideChunk(EntityManager entityManager, EntityCommandBuffer commandBuffer, Entity chunkEntity)
         {
             if (!entityManager.HasComponent<DisableRendering>(chunkEntity))
             {
-                return;
+                commandBuffer.AddComponent<DisableRendering>(chunkEntity);
             }
-
-            commandBuffer.RemoveComponent<DisableRendering>(chunkEntity);
         }
 
-        public static Entity SpawnChunk(EntityManager entityManager, in int3 coordinate, bool isVisible = true)
+        public static void ShowChunk(EntityManager entityManager, EntityCommandBuffer commandBuffer, Entity chunkEntity)
         {
-            var chunkEntity = entityManager.CreateEntity();
+            if (entityManager.HasComponent<DisableRendering>(chunkEntity))
+            {
+                commandBuffer.RemoveComponent<DisableRendering>(chunkEntity);
+            }
+        }
 
-            var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
+        public static void SpawnChunk(EntityCommandBuffer commandBuffer, in int3 coordinate, bool isVisible = true)
+        {
+            var chunkEntity = commandBuffer.CreateEntity();
 
             if (!isVisible)
             {
@@ -63,9 +57,7 @@ namespace Voxilarium
             commandBuffer.AddComponent<ImmediateChunk>(chunkEntity);
             commandBuffer.SetComponentEnabled<ImmediateChunk>(chunkEntity, false);
 
-            commandBuffer.Playback(entityManager);
-
-            return chunkEntity;
+            commandBuffer.AddComponent(chunkEntity, new NewChunk { Coordinate = coordinate });
         }
     }
 }
