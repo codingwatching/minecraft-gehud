@@ -1,14 +1,14 @@
 void UnpackVertex_float(int AtlasSize, float3 Data, out float3 Position, out float2 UV, out float3 Norm, out float4 Light)
 {
-#if defined(SHADER_API_D3D9) || defined(SHADER_API_D3D11) || defined(SHADER_API_D3D11_9X)
+// #if defined(SHADER_API_D3D9) || defined(SHADER_API_D3D11) || defined(SHADER_API_D3D11_9X)
     uint aData = asuint(Data.x);
     uint bData = asuint(Data.y);
     uint cData = asuint(Data.z);
-#else
-    uint aData = uint(Data.x);
-    uint bData = uint(Data.y);
-    uint cData = uint(Data.z);
-#endif
+// #else
+//     uint aData = uint(Data.x);
+//     uint bData = uint(Data.y);
+//     uint cData = uint(Data.z);
+// #endif
 
     // Mask = 2 ^ Bit - 1
 

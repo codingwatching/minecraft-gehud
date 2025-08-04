@@ -7,16 +7,18 @@ namespace Voxilarium
     [Preserve]
     public class Bootstrap : ClientServerBootstrap
     {
+        public const string GameplayScene = "Overworld";
+
+
         public override bool Initialize(string defaultWorldName)
         {
-            const string gameplayScene = "Overworld";
 
             if (!DetermineIfBootstrappingEnabled())
             {
                 return false;
             }
 
-            if (SceneManager.GetActiveScene().name == gameplayScene)
+            if (SceneManager.GetActiveScene().name == GameplayScene)
             {
                 AutoConnectPort = 7979;
                 CreateDefaultClientServerWorlds();
