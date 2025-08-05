@@ -8,6 +8,8 @@ namespace Voxilarium
     [BurstCompile]
     public struct ChunkGenerationJob : IJobParallelFor
     {
+        public const int Offset = 5;
+
         [ReadOnly]
         public int3 Coordinate;
         [ReadOnly]
@@ -27,7 +29,7 @@ namespace Voxilarium
             var peaksAndValleys = Noise.PeaksAndValleys.Sample2D(coordinate.x, coordinate.z);
             var result = continentalness * erosion * peaksAndValleys;
 
-            var height = (int)(result * Chunk.Size * Height);
+            var height = Offset * Chunk.Size + (int)(result * Chunk.Size * (Height - Offset));
             if (coordinate.y <= height)
             {
                 if (coordinate.y == height)

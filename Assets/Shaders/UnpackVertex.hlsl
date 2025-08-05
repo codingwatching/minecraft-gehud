@@ -1,4 +1,4 @@
-void UnpackVertex_float(int AtlasSize, float3 Data, out float3 Position, out float2 UV, out float3 Norm, out float4 Light)
+void UnpackVertex_float(int AtlasSize, float3 Data, out float3 Position, out float3 Norm, out float2 UV, out float4 Light)
 {
 // #if defined(SHADER_API_D3D9) || defined(SHADER_API_D3D11) || defined(SHADER_API_D3D11_9X)
     uint aData = asuint(Data.x);
