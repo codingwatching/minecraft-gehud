@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55fc71f3d8d96d649bb17379632f2e6f, type: 3}
+  m_Name: Dirt
+  m_EditorClassIdentifier: 
+  isSolid: 1
+  isTransparent: 0
+  absorption: 0
+  sprites:
+    right: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    left: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    top: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    bottom: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    front: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}
+    back: {fileID: 1953785726, guid: 5eae4710a0ac986428e40571ced9dc8f, type: 3}

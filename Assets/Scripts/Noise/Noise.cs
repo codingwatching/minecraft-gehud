@@ -1,0 +1,55 @@
+using System;
+using Unity.Collections;
+using Unity.Mathematics;
+
+namespace Voxilarium
+{
+    public struct Noise : IDisposable
+    {
+        public int3 Offset;
+        public float3 Scale;
+        public int Octaves;
+        public float Lacunarity;
+        public float Persistance;
+        public Curve Modification;
+
+        public Noise(NoiseDescriptor descriptor, Allocator allocator)
+        {
+            Offset = descriptor.Offset;
+            Scale = descriptor.Scale;
+            Octaves = descriptor.Octaves;
+            Lacunarity = descriptor.Lacunarity;
+            Persistance = descriptor.Persistance;
+            Modification = new Curve(descriptor.Modification, allocator);
+        }
+
+        public float Sample2D(float x, float y)
+        {
+            var result = 0.0f;
+            var frequency = 1.0f;
+            var amplitude = 1.0f;
+            var amplitudeSum = 0.0f;
+
+            for (int i = 0; i < Octaves; i++)
+            {
+                var position = new float2
+                {
+                    x = (x + Offset.x) * Scale.x * frequency,
+                    y = (y + Offset.y) * Scale.y * frequency
+                };
+
+                result += amplitude * (noise.cnoise(position) + 1.0f) / 2.0f;
+                amplitudeSum += amplitude;
+                amplitude *= Persistance;
+                frequency *= Lacunarity;
+            }
+
+            return Modification.Evaluate(result / amplitudeSum);
+        }
+
+        public void Dispose()
+        {
+            Modification.Dispose();
+        }
+    }
+}

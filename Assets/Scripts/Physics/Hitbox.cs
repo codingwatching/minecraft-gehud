@@ -1,35 +1,18 @@
-﻿using System;
-using UnityEngine;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.NetCode;
 
-namespace Minecraft.Physics {
-	public class Hitbox : MonoBehaviour {
-		public Bounds Bounds => new(center, size);
+namespace Voxilarium
+{
+    public struct Hitbox : IComponentData
+    {
+        public float3 Velocity;
+        public bool UseGravity;
+        public AABB Bounds;
+    }
 
-		public Vector3 Velocity { get; set; }
-
-		public bool IsKinematic {
-			get => isKinematic;
-			set => isKinematic = value;
-		}
-
-		internal static event Action<Hitbox> OnAdd;
-		internal static event Action<Hitbox> OnRemove;
-
-		[SerializeField] private Vector3 center;
-		[SerializeField] private Vector3 size = Vector3.one;
-		[SerializeField] private bool isKinematic = false;
-
-		private void OnEnable() {
-			OnAdd?.Invoke(this);
-		}
-
-		private void OnDisable() {
-			OnRemove?.Invoke(this);
-		}
-
-		private void OnDrawGizmosSelected() {
-			Gizmos.color = Color.green;
-			Gizmos.DrawWireCube(transform.position + center, size);
-		}
-	}
+    public struct HitboxPosition : IInputComponentData
+    {
+        public float3 Value;
+    }
 }

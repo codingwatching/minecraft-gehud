@@ -1,29 +1,41 @@
-﻿using UnityEngine;
+﻿using System;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Entities;
+using Unity.Mathematics;
 
-namespace Minecraft {
-	public class Chunk {
-        /// <summary>
-        /// Chunk size in blocks.
-        /// </summary>
-		public const int SIZE = 16;
-		public const int VOLUME = SIZE * SIZE * SIZE;
+namespace Voxilarium
+{
+    public struct Chunk : IComponentData, IDisposable
+    {
+        public const int Size = 16;
+        public const int Area = Size * Size;
+        public const int Volume = Area * Size;
 
-		public Vector3Int Coordinate { get; set; } = Vector3Int.zero;
+        public int3 Coordinate;
+        public NativeArray<Voxel> Voxels;
 
-        public BlockMap BlockMap { get; set; } = new();
+        public Voxel this[int index]
+        {
+            get => Voxels[index];
+            set => Voxels[index] = value;
+        }
 
-        public LiquidMap LiquidMap { get; set; } = new();
+        public Voxel this[int x, int y, int z]
+        {
+            get => Voxels[z * Area + y * Size + x];
+            set => Voxels[z * Area + y * Size + x] = value;
+        }
 
-        public LightMap LightMap { get; set; } = new();
+        public Voxel this[int3 coordinate]
+        {
+            get => this[coordinate.x, coordinate.y, coordinate.z];
+            set => this[coordinate.x, coordinate.y, coordinate.z] = value;
+        }
 
-        public TreeData TreeData { get; set; } = new();
-
-        public bool IsDirty { get; set; } = true;
-
-        public bool IsComplete { get; set; } = false;
-
-        public bool IsModified { get; set; } = false;
-
-        public bool IsSaved { get; set; } = false;
-	}
+        public void Dispose()
+        {
+            Voxels.Dispose();
+        }
+    }
 }
